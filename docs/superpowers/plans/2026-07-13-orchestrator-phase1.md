@@ -291,13 +291,14 @@ def test_pain_point_step_is_styled():
 def test_quotes_and_newlines_are_sanitized():
     model = {
         "process_name": "x",
-        "steps": [{"id": "s1", "label": 'He said "hi"\nthen left', "actor": "A"}],
+        "steps": [{"id": "s1", "label": 'He said "hi"\nthen left', "actor": ""}],
         "handoffs": [],
         "pain_points": [],
     }
     out = model_to_mermaid(model)
-    assert '"' not in out.split("classDef")[0].replace('flowchart TD', '')  # no raw double-quotes in node text
-    assert "\\n" not in out  # newlines collapsed, not escaped into mermaid
+    assert "'hi'" in out            # inner double-quotes converted to single
+    assert '"hi"' not in out        # no raw inner double-quotes left
+    assert "'hi' then left" in out  # newline collapsed to a space
 
 
 def test_empty_steps_returns_no_process_node():
