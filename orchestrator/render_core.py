@@ -5,6 +5,8 @@ from orchestrator.model import validate_process_model
 
 def _clean(text: str) -> str:
     # Mermaid node text: no double-quotes, no raw newlines, no brackets that break the shape.
+    if text is None:
+        return ""
     return (
         str(text)
         .replace('"', "'")
@@ -28,12 +30,12 @@ def model_to_mermaid(model: dict[str, Any]) -> str:
     lines = ["flowchart TD"]
     for step in steps:
         label = _clean(step["label"])
-        actor = _clean(step.get("actor", ""))
+        actor = _clean(step.get("actor") or "")
         text = f"{label}<br/>({actor})" if actor else label
         lines.append(f'    {step["id"]}["{text}"]')
 
     for h in model["handoffs"]:
-        label = _clean(h.get("label", ""))
+        label = _clean(h.get("label") or "")
         if label:
             lines.append(f'    {h["from"]} -->|{label}| {h["to"]}')
         else:

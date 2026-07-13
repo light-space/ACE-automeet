@@ -48,6 +48,35 @@ def test_quotes_and_newlines_are_sanitized():
     assert "'hi' then left" in out  # newline collapsed to a space
 
 
+def test_null_actor_renders_bare_label():
+    model = {
+        "process_name": "x",
+        "steps": [{"id": "s1", "label": "Do thing", "actor": None}],
+        "handoffs": [],
+        "pain_points": [],
+    }
+    out = model_to_mermaid(model)
+    assert "Do thing" in out
+    assert "(None)" not in out
+    assert "None" not in out
+
+
+def test_null_handoff_label_renders_unlabeled_edge():
+    model = {
+        "process_name": "x",
+        "steps": [
+            {"id": "s1", "label": "A", "actor": ""},
+            {"id": "s2", "label": "B", "actor": ""},
+        ],
+        "handoffs": [{"from": "s1", "to": "s2", "label": None}],
+        "pain_points": [],
+    }
+    out = model_to_mermaid(model)
+    assert "s1 --> s2" in out
+    assert "-->|None|" not in out
+    assert "None" not in out
+
+
 def test_empty_steps_returns_no_process_node():
     out = model_to_mermaid({"process_name": "", "steps": [], "handoffs": [], "pain_points": []})
     assert out.startswith("flowchart TD")
