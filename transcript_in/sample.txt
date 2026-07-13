@@ -1,0 +1,15 @@
+Facilitator: Walk me through how an invoice gets paid today.
+Maria (AP): So the invoice comes in by email to our shared inbox.
+Maria: I download the PDF and re-key the amounts into the spreadsheet by hand. That's honestly the worst part, takes me a couple hours a day.
+Maria: Then I email it to Dev, our manager, for approval.
+Dev (Manager): Right, I get a lot of these. I eyeball it and reply "approved" usually same day, sometimes it sits a day if I'm travelling.
+Maria: Once Dev approves I enter it into the accounting system and schedule the payment.
+Facilitator: Who catches errors?
+Maria: Nobody really until the vendor calls asking where their money is.
+Facilitator: How often does that happen?
+Maria: Maybe two or three times a month, usually a typo in the amount from re-keying.
+Dev: Yeah and by the time we catch it the payment's already gone out, so we're chasing the vendor to send it back.
+Facilitator: Is there any system that tracks approval status?
+Dev: Not really, it's all just email threads. If I'm out sick nothing moves.
+Maria: I've asked for an approval tool a few times but it hasn't happened yet.
+Facilitator: Got it, that's really helpful, thanks both.

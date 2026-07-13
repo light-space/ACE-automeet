@@ -191,3 +191,26 @@ relying on: `tool` / `create_sdk_mcp_server`, `AgentDefinition` fields,
 values, `mcp_servers`, `agents`, `allowed_tools`), `ClaudeSDKClient`
 query/receive, and the current model id string. Use the context7 / claude-code
 docs tools during the plan.
+
+## Phase 2 notes
+
+### Checkpoint gate can be shadowed by `allowed_tools`
+
+The Agent SDK auto-approves any tool that is listed by its whole-tool name in
+`allowed_tools` *before* `can_use_tool` ever runs — it emits a
+`CanUseToolShadowedWarning` when this happens. That means `facilitator_gate`
+(§4, `orchestrator/checkpoints.py`) is only consulted for tools that are *not*
+already whitelisted in `allowed_tools`.
+
+Concretely: if Phase 2 adds `mcp__pipeline__render_asis` to `CHECKPOINT_TOOLS`
+while `render_asis` remains in `allowed_tools`, the gate will not fire for that
+tool — the SDK approves it via the allowed-tools shortcut first, and the
+`PermissionResultDeny` path in `facilitator_gate` silently never triggers.
+
+Phase 2 must do one of:
+- (a) remove `render_asis` from `allowed_tools` so calls to it fall through to
+  `can_use_tool` and reach `facilitator_gate`, or
+- (b) gate it via a `PreToolUse` hook instead of relying on `can_use_tool`.
+
+Phase 1 is unaffected: `CHECKPOINT_TOOLS` is empty in P1, so there is nothing
+for `allowed_tools` to shadow.

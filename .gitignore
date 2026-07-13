@@ -6,4 +6,6 @@ venv/
 transcript_in/*.txt
 !transcript_in/sample.txt
 outputs/*
+!outputs/.gitkeep
 prototypes/*
+!prototypes/.gitkeep
