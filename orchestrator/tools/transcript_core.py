@@ -8,7 +8,7 @@ def read_latest_transcript(dir_path: str = "transcript_in") -> str:
         raise FileNotFoundError(
             f"no .txt transcript found in {dir_path}/ — drop a transcript file there and press the button again"
         )
-    return txts[0].read_text()
+    return txts[0].read_text(encoding="utf-8")
 
 
 def granola_fetch_with_retry(note_id: str | None) -> str:

@@ -22,3 +22,9 @@ def test_empty_dir_raises(tmp_path):
 def test_granola_stub_raises():
     with pytest.raises(NotImplementedError):
         granola_fetch_with_retry("note_123")
+
+
+def test_reads_non_ascii_transcript_intact(tmp_path):
+    content = "Café — Maria's “invoice” note"
+    (tmp_path / "transcript.txt").write_text(content, encoding="utf-8")
+    assert read_latest_transcript(str(tmp_path)) == content
