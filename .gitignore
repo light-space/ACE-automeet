@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+transcript_in/*.txt
+!transcript_in/sample.txt
+outputs/*
+prototypes/*
