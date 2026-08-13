@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * KeyShot brand tokens — the single source of truth for colour.
+ * Mirrored (with the rules that govern them) in `lib/tokens.ts`.
+ * Deliberately light-only: these prototypes are presented in a workshop, and a
+ * dark variant is not in scope.
+ */
+:root {
+  --ks-accent: #ff6105;
+  --ks-accent-text: #c64b03;
+  --ks-accent-light: #ffb380;
+  --ks-accent-tint: #ffece1;
+
+  --ks-ink: #1d1c1a;
+  --ks-text-2: #54534e;
+  --ks-text-3: #8b8a84;
+
+  --ks-hairline: #c7c6c0;
+  --ks-soft-fill: #e5e4df;
+  --ks-surface: #ffffff;
+  --ks-floor: #fafaf8;
+  --ks-slate: #4a5568;
+
+  /* Illustrative-value chip. Intentionally outside the brand palette. */
+  --ks-illustrative-bg: #fef3c7;
+  --ks-illustrative-text: #894b00;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--ks-floor);
+    color: var(--ks-ink);
+  }
+}
+
+@layer utilities {
+  /* Focus ring in brand accent. Accent as a *ring* is a fill, not text — allowed. */
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-floor focus-visible:ring-2 focus-visible:ring-accent;
+  }
+}
