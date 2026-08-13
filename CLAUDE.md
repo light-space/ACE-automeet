@@ -186,3 +186,7 @@ and Teams purple in `TeamsCard.tsx` — both commented as such at their definiti
 - The guard script honours a `guard-ok` marker on a line, used **only** for prose that quotes a
   constraint (four places, all doc comments). Never use it to silence a real violation —
   `git grep guard-ok` makes every use visible in review.
+- The hook is a fast nudge inside the run, not the gate. It is escapable by design, because the
+  alternative is a guard that flags its own documentation. **The CI constraint scan must not
+  honour `guard-ok`** — that layering is what makes the marker safe to have: cheap to satisfy
+  mid-run, impossible to smuggle past review.
