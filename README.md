@@ -50,6 +50,56 @@ pnpm lint         # eslint, zero warnings tolerated
 pnpm typecheck    # tsc --noEmit
 ```
 
+## Triggering a run
+
+Sirius picks up work when the bot is `@`-mentioned in a channel it is in, or DMed directly.
+The message names the slug, points at the attached transcript, and invokes the skill — the rules
+themselves live in `CLAUDE.md` and `.claude/skills/keyshot-visualisation/SKILL.md`, so the prompt
+stays short on purpose.
+
+```
+@sirius Build the visualisation `northwind-renewals` in ACE-automeet from the attached
+discovery transcript. Use the keyshot-visualisation skill.
+```
+
+Per run, change two things: the slug, and the transcript you attach. Nothing else.
+
+### Attaching the transcript
+
+**Upload the transcript as a real `.txt` file** — drag it in, or use the `+` / file picker.
+
+- Accepted types are `text/plain`, `text/markdown`, and png/jpeg/gif/webp, up to 20MB. Anything
+  else is dropped silently (`src/slack/attachments.ts` in sirius). <!-- guard-ok: naming the chat tool sirius runs on, not client UI -->
+- **A Slack code snippet is not a `.txt` file.** <!-- guard-ok: naming the chat tool sirius runs on, not client UI -->
+  Pasting the transcript as a snippet uploads it with a different mimetype, so it is discarded
+  without any message and the run proceeds with no transcript at all — inventing everything it
+  should have quoted. This is the single most common way a run goes wrong.
+- Accepted files are downloaded into the clone at `.ain-inputs/<filename>` and their paths are
+  appended to the agent's prompt as *"The user attached reference files (read them first)"*.
+
+### Fast run vs. plan first
+
+The message above takes the fast path: `.sirius/config.yml` sets `fast_path: true`, so a small,
+confidently routed request skips plan-and-approve and goes straight to a PR. A `quick:` or
+`fast:` prefix on the request forces that mode explicitly.
+
+For a first-of-its-kind transcript, or when someone wants to see the screen breakdown before any
+code exists, force the heavy path with a `spec:` (or `plan:`) prefix — sirius posts a plan for
+approval first:
+
+```
+@sirius spec: Build the visualisation `northwind-renewals` in ACE-automeet from the attached
+discovery transcript. Use the keyshot-visualisation skill.
+```
+
+The prefix goes after the mention, at the start of the request text.
+
+> `forced_fast_path` is deliberately still absent from `.sirius/config.yml`. light-space/sirius#87
+> has merged, but merged is not deployed — the key only validates against the repo-profile schema
+> that is actually running, and it also needs migration 020 to have run. Add it once the sirius
+> deploy carrying #87 is live and 020 has run; adding it earlier makes the config invalid and takes
+> this repo out of sirius's service silently.
+
 ## Layout
 
 ```
