@@ -1,0 +1,39 @@
+# Sirius repo profile.
+#
+# Validated key-by-key against the zod schema in
+# sirius/src/domain/repoProfile.ts. That schema is `.strict()`: a single
+# unknown key makes evaluateOptIn() return false and this repo drops out of
+# Sirius's service entirely, silently. Do not add keys speculatively.
+#
+# Deliberately absent, each for a reason:
+#   forced_fast_path — not in the schema yet; lands in a separate sirius PR.
+#                      Adding it now takes the repo offline. Add it only after
+#                      that PR ships.
+#   commands.check   — a red check blocks the PR outright. `pnpm build` is the
+#                      real gate and CI runs it.
+#   preview:         — omitted entirely. A bare `preview:` line parses as YAML
+#                      null and fails the whole config; we want the defaults.
+version: 1
+summary: Future-state UI visualisations built from client discovery transcripts — one self-contained folder of Next.js screens per transcript, rendered inside Salesforce or Light application chrome for workshop review.
+use_when:
+  - KeyShot ACE prototype
+  - workshop future-state screens
+  - visualise a discovery transcript as screens
+stack: TypeScript, React, Next.js, Tailwind
+commands:
+  install: pnpm install --frozen-lockfile --ignore-scripts
+fast_path: true
+draft_prs: false
+design:
+  gallery: app/visualisations/keyshot-reference/quote-approval/page.tsx
+  rules:
+    - Work only inside app/visualisations/<slug>/ — your own visualisation's folder. Never edit a file outside it. There is no registry to update; the gallery discovers visualisations by reading the directory, so editing a shared file can only break someone else's work.
+    - Anything the sales team touches renders in Salesforce chrome, not Light chrome. A Light-side quote screen aimed at sales is dead on arrival.
+    - Never emit a PO-block. Warning and acknowledging a missing purchase order is fine; blocking a quote on one is not.
+    - Any audit or log screen must be exportable by the user — compose ExportCsv into it.
+    - Microsoft Teams, never Slack. This client does not use Slack.
+    - No subscription management. Chargebee is out of scope for this engagement.
+    - Never promise unshipped product. Screens show only capability that exists or is committed.
+    - Every displayed value routes through components/ui/Field.tsx, which auto-badges illustrative values. Never interpolate a raw data value into JSX.
+    # Quoted: an unquoted " #" starts a YAML comment and would silently truncate this rule.
+    - "Brand accent #FF6105 is fill-only and must never appear in a color declaration; accent text is #C64B03. There is deliberately no text-accent Tailwind class."

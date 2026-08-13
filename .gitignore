@@ -1,11 +1,34 @@
-__pycache__/
-*.pyc
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next
+.next/
+out/
+next-env.d.ts
+
+# vercel
+.vercel/
+
+# env
 .env
-.venv/
-venv/
-transcript_in/*.txt
-!transcript_in/sample.txt
+.env*.local
+
+# build / editor noise
+*.tsbuildinfo
+.DS_Store
+*.log
+
+# generated engagement artefacts
 outputs/*
 !outputs/.gitkeep
 prototypes/*
 !prototypes/.gitkeep
+
+# legacy Python pipeline (the tree itself is committed; these are its artefacts)
+__pycache__/
+*.pyc
+.venv/
+venv/
+legacy/transcript_in/*.txt
+!legacy/transcript_in/sample.txt
