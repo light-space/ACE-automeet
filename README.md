@@ -59,14 +59,34 @@ stays short on purpose.
 
 ```
 @sirius Build the visualisation `northwind-renewals` in ACE-automeet from the attached
-discovery transcript. Use the keyshot-visualisation skill.
+discovery transcript, using the attached context dump as the source of truth for
+provenance. Use the keyshot-visualisation skill.
 ```
 
 Per run, change two things: the slug, and the transcript you attach. Nothing else.
 
-### Attaching the transcript
+Drop the `context dump` clause if you are not attaching one — a prompt that points at a file
+that is not there is worse than no prompt, because the agent will look for it and improvise
+when it cannot find it.
+
+### Attaching the transcript (and the context dump)
 
 **Upload the transcript as a real `.txt` file** — drag it in, or use the `+` / file picker.
+
+Attach the **context dump** alongside it as a second `.md` or `.txt` file. There is no limit on
+the number of text attachments (only images are capped, at three), and every accepted file lands
+in the clone with its path handed to the agent.
+
+The context dump is the accumulated source of truth for a client: real document number formats,
+real account names and amounts, the actual status vocabulary of their systems, and the things
+they have already rejected. It is tagged with the same `V`/`I`/`X` markers the screens use, so
+provenance carries across without re-deciding it — which is the point, because re-deciding is how
+an illustrative value quietly becomes a stated fact.
+
+**Keep it out of git.** A context dump holds a client's real financial detail and named staff,
+and this repository is public. Attaching it per run means it reaches the agent's workspace and
+nothing else; committing it publishes it. If this repo is ever made private, that trade is worth
+revisiting — a committed dump would survive across runs instead of being re-attached each time.
 
 - Accepted types are `text/plain`, `text/markdown`, and png/jpeg/gif/webp, up to 20MB. Anything
   else is dropped silently (`src/slack/attachments.ts` in sirius). <!-- guard-ok: naming the chat tool sirius runs on, not client UI -->
