@@ -85,6 +85,28 @@ The test for `V` is not "is this plausible" but "can I point at the line in the 
 you find yourself reasoning about whether something is probably true, it is `I` at best. **When
 in doubt, `X`.**
 
+### If a context dump is attached
+
+A run may come with a second file alongside the transcript — a context dump: the accumulated
+source of truth for this client, assembled from earlier calls and real artefacts. Read it before
+you start, and treat it as carrying the same authority as the transcript.
+
+It is already tagged with the same three markers, so they carry straight across: a `[V]` in the
+dump is a `V` on screen, `[I]` is `I`, `[X]` is `X`. Do not upgrade a marker because a value looks
+solid — the dump has done the sourcing work already, and re-deciding it is how a `[X]` quietly
+becomes a fact.
+
+Two things it gives you that a transcript alone does not. **Exact specimens** — real document
+number formats, real account names, real amounts, the actual status vocabulary of their systems.
+Use them verbatim rather than inventing lookalikes; a real invoice number is the cheapest
+specificity available. And **hard constraints** — a context dump usually records what the client
+has already rejected. Contradicting one is the fastest way to lose a room, and the dump is often
+the only place that knowledge is written down.
+
+Where the transcript and the dump disagree, the transcript wins for anything the client said
+today, and say so in your PR description. People change their process between calls, and the
+newer statement is the one they will defend in the room.
+
 ### 6. Write the folder, then verify
 
 Build the folder exactly as `CLAUDE.md` specifies — `meta.ts`, the two-line `page.tsx`, one
