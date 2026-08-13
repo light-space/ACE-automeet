@@ -123,8 +123,14 @@ control. Compose `ExportCsv` (`ActionLog` already does this for you). A log the 
 out of the system is a complaint waiting to happen.
 
 **4. Microsoft Teams, never Slack.**
-This client runs on Microsoft Teams. Use `TeamsCard` for notification mock-ups. The word "Slack"
-must not appear anywhere in this repo — not in code, not in comments, not in example strings.
+This client runs on Microsoft Teams. Use `TeamsCard` for notification mock-ups. Inside
+`app/visualisations/` and `components/` the rule is absolute: the other tool's name must not
+appear in a screen, a component, a comment or an example string. Showing a client a mock-up of a
+tool they do not use says you were not listening.
+
+The repo's own operational docs (`README.md`, this file) necessarily name the chat tool *sirius*
+is triggered from, which is a different subject. That is the only place the word belongs, and it
+is why those lines carry `guard-ok`. If you are writing a screen, the rule is absolute.
 
 **5. No subscription management.**
 Chargebee is explicitly out of scope for this engagement. No plan pickers, no billing-cycle
