@@ -1,17 +1,102 @@
 @AGENTS.md
 
-# KeyShot ACE — prototype screens
+# KeyShot ACE — discovery visualisations
 
-This repo holds **future-state UI prototypes** for the KeyShot ACE engagement. Each screen is a
-static Next.js page showing how a KeyShot workflow *could* work, drawn inside the application
-chrome its real users would recognise. The screens are projected in a workshop and argued over.
+This repo holds **future-state UI visualisations** for the KeyShot ACE engagement. A
+*visualisation* is one client discovery transcript turned into a small set of screens: static
+Next.js pages showing how a workflow *could* work, drawn inside the application chrome its real
+users would recognise. They are projected in a workshop and argued over.
+
+The app hosts many visualisations side by side. Each one is a self-contained folder under
+`app/visualisations/`. The gallery at `app/page.tsx` lists them all.
 
 There is no backend, no database, no auth, no data fetching. Every screen is a server component
 rendering hardcoded props. If you find yourself adding an API route, stop — you have
 misunderstood the task.
 
-Run index is `app/page.tsx`. The worked example that shows the whole vocabulary is
-**`app/fallback/page.tsx`** — read it before building anything.
+The worked example that shows the whole vocabulary is
+**`app/visualisations/keyshot-reference/quote-approval/page.tsx`** — read it before building
+anything.
+
+---
+
+## Building a visualisation
+
+> **The one rule that governs everything else: work only inside
+> `app/visualisations/<slug>/`. Never edit a file outside your visualisation's folder.**
+
+You will be told a slug. Create that folder and put everything you write inside it:
+
+```
+app/visualisations/<slug>/
+  meta.ts                 what this visualisation is: title, client, sourceTranscript, date, blurb
+  page.tsx                the index of this visualisation's screens (a two-liner, see below)
+  <screen>/page.tsx       one screen — as many folders as you need
+```
+
+**`meta.ts`** default-exports a `VisualisationMeta`:
+
+```ts
+import type { VisualisationMeta } from "@/lib/visualisations";
+
+const meta: VisualisationMeta = {
+  title: "Renewal approvals",
+  client: "Northwind Design Group",
+  sourceTranscript: "northwind-discovery-2026-08-04.txt",
+  date: "2026-08-04",              // ISO, the date of the conversation
+  blurb: "What the renewals desk asked for, drawn as three screens.",
+};
+
+export default meta;
+```
+
+**`page.tsx`** is always exactly this — the shared component discovers your screen folders:
+
+```tsx
+import { VisualisationIndex } from "@/components/gallery/VisualisationIndex";
+
+export default function Page() {
+  return <VisualisationIndex slug="<slug>" />;
+}
+```
+
+**Each screen** is `app/visualisations/<slug>/<screen>/page.tsx`: a default-exported server
+component wrapped in `SalesforceChrome` or `LightChrome`, plus a named `screenMeta` export so the
+index knows its title and who it is for. `chrome` here must match the chrome you actually render.
+
+```tsx
+import type { ScreenMeta } from "@/lib/visualisations";
+
+export const screenMeta: ScreenMeta = {
+  title: "Renewal approval queue",
+  blurb: "What a renewals manager sees on Monday morning. Sales-facing.",
+  chrome: "salesforce",
+};
+
+export default function RenewalQueueScreen() { /* … */ }
+```
+
+### Why the folder boundary is absolute
+
+**There is no registry.** The gallery reads `app/visualisations/` from disk during prerender
+(`lib/visualisations.ts`), and a visualisation's index reads its own folder the same way. Adding a
+folder is the entire act of publishing a visualisation.
+
+That design exists to protect the visualisations already built. Every visualisation is written by
+a separate run from a separate transcript, and the ones already on the gallery are shown to
+clients. If there were a central list, every run would have to edit that one file — two runs would
+collide in it, and one bad run could break every visualisation in the repo at once. There isn't,
+so it can't.
+
+The corollary is on you: **a file outside your folder is not yours to change.** Not
+`lib/visualisations.ts`, not `app/page.tsx`, not a component under `components/`, not this file.
+If you believe a shared component needs a change to build your screen, you are almost certainly
+wrong — compose what exists. If you are genuinely blocked, say so in the PR description and leave
+the shared file alone; a human will decide. Editing outside your folder is how a run that produced
+one good visualisation ends up breaking five.
+
+Two small exceptions, and only these: `.sirius/config.yml` and `CLAUDE.md` may be updated by a
+human-directed change to the repo's own workflow. Never as a side effect of building a screen.
 
 ---
 
@@ -177,9 +262,15 @@ and Teams purple in `TeamsCard.tsx` — both commented as such at their definiti
 - **Server components by default.** `ExportCsv` is the only `"use client"` file, and it should stay
   that way. Prototypes are static; if you reach for `useState`, ask whether the screen needs it.
 - Dynamic route params are a **Promise** in this Next version — `const { screen } = await params`.
+  Visualisations use static route segments, so you should not need params at all.
 - Imports use the `@/` alias rooted at the repo. Named exports for components.
-- Add a screen: create `app/prototype/<slug>/page.tsx`, then register it in `lib/screens.ts` so it
-  appears on the run index. A static route wins over the `[screen]` placeholder automatically.
+- Add a screen: create a folder `app/visualisations/<slug>/<screen>/` containing `page.tsx` with a
+  default export and a `screenMeta` export. It appears on the visualisation's index on the next
+  build. **There is nothing to register, and nothing outside your folder to edit** — see
+  "Building a visualisation" above.
+- Every route in this app is prerendered static (`○` in the `next build` output). Discovery reads
+  the filesystem at build time; keep it that way — no `cookies()`, `headers()` or `searchParams` in
+  a screen, all of which would force it dynamic.
 - `legacy/` holds the retired Python pipeline. Frozen — do not read it for guidance, do not edit it,
   do not import from it.
 - Verify with `pnpm build` and `pnpm lint` before finishing. Both must be clean.

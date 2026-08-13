@@ -14,18 +14,20 @@
 #   preview:         — omitted entirely. A bare `preview:` line parses as YAML
 #                      null and fails the whole config; we want the defaults.
 version: 1
-summary: Future-state UI prototypes for the KeyShot ACE engagement — Next.js screens rendered inside Salesforce or Light application chrome for workshop review.
+summary: Future-state UI visualisations built from client discovery transcripts — one self-contained folder of Next.js screens per transcript, rendered inside Salesforce or Light application chrome for workshop review.
 use_when:
   - KeyShot ACE prototype
   - workshop future-state screens
+  - visualise a discovery transcript as screens
 stack: TypeScript, React, Next.js, Tailwind
 commands:
   install: pnpm install --frozen-lockfile --ignore-scripts
 fast_path: true
 draft_prs: false
 design:
-  gallery: app/fallback/page.tsx
+  gallery: app/visualisations/keyshot-reference/quote-approval/page.tsx
   rules:
+    - Work only inside app/visualisations/<slug>/ — your own visualisation's folder. Never edit a file outside it. There is no registry to update; the gallery discovers visualisations by reading the directory, so editing a shared file can only break someone else's work.
     - Anything the sales team touches renders in Salesforce chrome, not Light chrome. A Light-side quote screen aimed at sales is dead on arrival.
     - Never emit a PO-block. Warning and acknowledging a missing purchase order is fine; blocking a quote on one is not.
     - Any audit or log screen must be exportable by the user — compose ExportCsv into it.
