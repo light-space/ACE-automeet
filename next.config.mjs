@@ -6,6 +6,19 @@ const nextConfig = {
   outputFileTracingExcludes: {
     "*": ["./legacy/**/*"],
   },
+  // `/fallback` was the worked example's route before visualisations existed.
+  // It is linked from PR descriptions and workshop notes, so it keeps working.
+  // A config redirect rather than a stub page: no route file to mistake for a
+  // visualisation, and nothing sitting in `app/` that has to be maintained.
+  async redirects() {
+    return [
+      {
+        source: "/fallback",
+        destination: "/visualisations/keyshot-reference",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

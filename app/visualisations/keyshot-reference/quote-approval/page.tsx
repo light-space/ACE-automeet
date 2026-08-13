@@ -9,10 +9,11 @@ import { Field, I, V, X } from "@/components/ui/Field";
 import { Table } from "@/components/ui/Table";
 import { TeamsCard } from "@/components/ui/TeamsCard";
 import { Typography } from "@/components/ui/Typography";
+import type { ScreenMeta } from "@/lib/visualisations";
 
 /**
- * Fallback screen — the placeholder that stands in for the pre-built prototype,
- * and the component gallery `.sirius/config.yml` points an agent at.
+ * The reference screen — the component gallery `.sirius/config.yml` points an
+ * agent at. Hand-built by the Light team, not agent output.
  *
  * Read this before building a screen. It is a worked example of the whole
  * vocabulary: a sales-facing record in Salesforce chrome, every value carrying
@@ -23,7 +24,18 @@ import { Typography } from "@/components/ui/Typography";
  * parts are, without reading the source. That is the point of `Field`.
  */
 
-export default function FallbackPage() {
+/**
+ * Every screen exports this. It is how the visualisation index knows the
+ * screen's title and who it is for without any central list. `chrome` here
+ * must match the chrome component the screen actually renders.
+ */
+export const screenMeta: ScreenMeta = {
+  title: "Quote approval",
+  blurb: "A quote submitted for approval with no purchase order attached. Sales-facing.",
+  chrome: "salesforce",
+};
+
+export default function QuoteApprovalScreen() {
   return (
     <SalesforceChrome
       objectType="Quote"

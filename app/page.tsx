@@ -1,72 +1,98 @@
 import Link from "next/link";
 
+import { CalendarDays, Layers } from "lucide-react";
+
 import { Badge } from "@/components/ui/Badge";
 import { Callout } from "@/components/ui/Callout";
 import { Typography } from "@/components/ui/Typography";
-import { SCREENS } from "@/lib/screens";
+import { formatDiscoveryDate, loadVisualisations } from "@/lib/visualisations";
 
 /**
- * Run index. Lists every prototype screen registered in `lib/screens.ts`.
- * This is the page a workshop facilitator opens first, so it stays plain.
+ * The gallery. One card per visualisation — one client discovery transcript
+ * turned into a set of future-state screens.
+ *
+ * Nothing is registered here. `loadVisualisations()` reads
+ * `app/visualisations/` during prerender, so a new visualisation appears by
+ * existing as a folder. That is what keeps each agent run inside its own
+ * folder: there is no shared list for two runs to collide in, and no shared
+ * list a bad run can corrupt.
  */
 
-export default function HomePage() {
+export default async function HomePage() {
+  const visualisations = await loadVisualisations();
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-16">
+    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-6 py-16">
       <header className="flex flex-col gap-3 border-b-0.5 border-hairline pb-6">
         <Typography as="span" size="xs" className="uppercase tracking-wide text-accentText">
-          KeyShot ACE
+          Light · ACE
         </Typography>
         <Typography as="h1" size="3xl" bold>
-          Prototype screens
+          Visualisations
         </Typography>
         <Typography as="p" size="sm" className="max-w-2xl text-text2">
-          Future-state screens for workshop review. Each one renders inside the application
-          chrome its real users would see. Values marked{" "}
+          Each visualisation turns one client discovery conversation into future-state screens,
+          drawn inside the application chrome those users would really see. Values marked{" "}
           <span className="rounded-full bg-illustrative px-1.5 py-0.5 text-[10px] font-medium text-illustrative">
             Illustrative
           </span>{" "}
-          are invented to make the screen legible — they are not sourced from KeyShot.
+          are invented to make a screen legible — they are not sourced from the client.
         </Typography>
       </header>
 
-      {SCREENS.length === 0 ? (
-        <Callout tone="info" title="No screens yet">
+      {visualisations.length === 0 ? (
+        <Callout tone="info" title="No visualisations yet">
           <Typography as="p" size="sm" className="text-text2">
-            This is the app backbone. Add a screen at{" "}
+            A visualisation is a folder. Create{" "}
             <code className="rounded bg-softFill px-1 py-0.5 text-xs">
-              app/prototype/&lt;slug&gt;/page.tsx
+              app/visualisations/&lt;slug&gt;/
             </code>{" "}
-            and register it in{" "}
-            <code className="rounded bg-softFill px-1 py-0.5 text-xs">lib/screens.ts</code>. See{" "}
-            <Link href="/fallback" className="text-accentText underline underline-offset-4">
-              the fallback screen
-            </Link>{" "}
-            for the component vocabulary.
+            containing a{" "}
+            <code className="rounded bg-softFill px-1 py-0.5 text-xs">meta.ts</code>, an index{" "}
+            <code className="rounded bg-softFill px-1 py-0.5 text-xs">page.tsx</code>, and one
+            folder per screen. It appears here on the next build — there is no registry to edit,
+            and you should not edit anything outside your own folder. See{" "}
+            <code className="rounded bg-softFill px-1 py-0.5 text-xs">CLAUDE.md</code>.
           </Typography>
         </Callout>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {SCREENS.map((screen) => (
-            <li key={screen.slug}>
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {visualisations.map(({ slug, meta, screens }) => (
+            <li key={slug} className="flex">
               <Link
-                href={`/prototype/${screen.slug}`}
-                className="focus-ring flex items-center justify-between gap-4 rounded-5 border-0.5 border-hairline bg-surface px-4 py-3 transition hover:border-text3"
+                href={`/visualisations/${slug}`}
+                className="focus-ring group flex w-full flex-col gap-3 rounded-5 border-0.5 border-hairline bg-surface p-5 transition hover:border-accentLight"
               >
-                <span className="flex min-w-0 flex-col gap-1">
-                  <Typography as="span" size="15" bold>
-                    {screen.title}
+                <div className="flex items-start justify-between gap-3">
+                  <Typography
+                    as="span"
+                    size="xs"
+                    bold
+                    className="uppercase tracking-wide text-accentText"
+                  >
+                    {meta.client}
                   </Typography>
-                  <Typography as="span" size="xs" className="text-text2">
-                    {screen.blurb}
+                  {meta.reference && <Badge tone="neutral">Reference</Badge>}
+                </div>
+
+                <Typography as="h2" size="lg" bold className="leading-snug">
+                  {meta.title}
+                </Typography>
+
+                <Typography as="p" size="xs" className="line-clamp-3 text-text2">
+                  {meta.blurb}
+                </Typography>
+
+                <div className="mt-auto flex items-center gap-4 border-t-0.5 border-hairline pt-3">
+                  <Typography as="span" size="xs" className="flex items-center gap-1.5 text-text3">
+                    <CalendarDays size={13} aria-hidden />
+                    {formatDiscoveryDate(meta.date)}
                   </Typography>
-                </span>
-                <span className="flex shrink-0 items-center gap-2">
-                  <Badge tone={screen.chrome === "salesforce" ? "pending" : "neutral"}>
-                    {screen.chrome === "salesforce" ? "Salesforce" : "Light"}
-                  </Badge>
-                  {!screen.built && <Badge tone="draft">Draft</Badge>}
-                </span>
+                  <Typography as="span" size="xs" className="flex items-center gap-1.5 text-text3">
+                    <Layers size={13} aria-hidden />
+                    {screens.length} {screens.length === 1 ? "screen" : "screens"}
+                  </Typography>
+                </div>
               </Link>
             </li>
           ))}
@@ -75,7 +101,9 @@ export default function HomePage() {
 
       <footer className="mt-auto border-t-0.5 border-hairline pt-6">
         <Typography as="p" size="xs" className="text-text3">
-          Read CLAUDE.md before adding a screen. The six hard constraints are not negotiable.
+          Read CLAUDE.md before adding a visualisation. Work only inside your own
+          <code className="mx-1 rounded bg-softFill px-1 py-0.5">app/visualisations/&lt;slug&gt;/</code>
+          folder — the six hard constraints are not negotiable.
         </Typography>
       </footer>
     </main>
