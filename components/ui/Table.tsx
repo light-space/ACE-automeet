@@ -21,6 +21,47 @@ import type { ProvenancedValue } from "@/lib/tokens";
  * `Button`. Never interpolate a raw string into a cell; that defeats the gate.
  */
 
+/**
+ * The lucide-icon-prefixed column header, ported from axolotl's
+ * `TableColumnHeader` (`src/components/Table.tsx` @ 2eeea2714) minus its
+ * `Tooltip`. This is one of the two most recognisable shapes in Light: a 16px
+ * `stroke-1.5` glyph in `icon-secondary`, then the label in `text-secondary`,
+ * truncating. It is how a reader scans a wide table — give every column an icon.
+ *
+ * Exported so a screen can build a bespoke table head and still get the real
+ * shape; `Table` below composes it for you from `columns`.
+ */
+export function TableColumnHeader({
+  icon: Icon,
+  title,
+  align = "left",
+  className,
+  slotEnd,
+}: {
+  icon?: LucideIcon;
+  title: string;
+  align?: "left" | "center" | "right";
+  className?: string;
+  slotEnd?: React.ReactNode;
+}) {
+  return (
+    <Typography
+      as="span"
+      size="sm"
+      className={cn(
+        "flex items-center gap-1 text-text-secondary",
+        align === "center" && "justify-center",
+        align === "right" && "flex-row-reverse",
+        className
+      )}
+    >
+      {Icon && <Icon className="h-4 w-4 flex-shrink-0 stroke-1.5 text-icon-secondary" />}
+      <span className="truncate text-text-secondary">{title}</span>
+      {slotEnd ?? null}
+    </Typography>
+  );
+}
+
 export type TableColumn = {
   key: string;
   header: string;
@@ -68,31 +109,22 @@ export function Table({ columns, rows, caption, className }: TableProps) {
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b-0.5 border-hairline bg-floor">
-              {columns.map((column) => {
-                const Icon = column.icon;
-                return (
-                  <th
-                    key={column.key}
-                    scope="col"
-                    className={cn(
-                      "px-4 py-2 font-medium",
-                      column.align === "right" ? "text-right" : "text-left"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1.5",
-                        column.align === "right" && "flex-row-reverse"
-                      )}
-                    >
-                      {Icon && <Icon size={13} strokeWidth={2} className="shrink-0 text-text3" />}
-                      <Typography as="span" size="xs" className="tracking-wide text-text2">
-                        {column.header}
-                      </Typography>
-                    </span>
-                  </th>
-                );
-              })}
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  scope="col"
+                  className={cn(
+                    "px-4 py-2 font-normal",
+                    column.align === "right" ? "text-right" : "text-left"
+                  )}
+                >
+                  <TableColumnHeader
+                    icon={column.icon}
+                    title={column.header}
+                    align={column.align === "right" ? "right" : "left"}
+                  />
+                </th>
+              ))}
             </tr>
           </thead>
 
