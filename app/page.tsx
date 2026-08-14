@@ -72,7 +72,7 @@ export default async function HomePage() {
                   >
                     {meta.client}
                   </Typography>
-                  {meta.reference && <Badge tone="neutral">Reference</Badge>}
+                  {meta.reference && <Badge color="inactive">Reference</Badge>}
                 </div>
 
                 <Typography as="h2" size="lg" bold className="leading-snug">

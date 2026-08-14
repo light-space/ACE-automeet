@@ -4,55 +4,61 @@ import { cn } from "@/lib/cn";
 import { Typography } from "@/components/ui/Typography";
 
 /**
- * Adapted from axolotl `src/components/ui/Badge.tsx`.
+ * Ported from axolotl `src/components/ui/Badge.tsx` @ 2eeea2714.
  *
- * Kept: the pill geometry (`h-[21px] rounded-full px-2`), the `slotLeft` icon
- * slot, and the status-tone vocabulary keyed draft / pending / positive /
- * negative. Recoloured onto the KeyShot palette.
+ * Kept: the `h-[21px] rounded-full px-2` pill, the `slotLeft` icon slot, the
+ * `truncate` label, and — the part that matters — axolotl's `color` vocabulary
+ * mapped onto Light's real status tokens. Each entry is a background/foreground
+ * PAIR (`bg-status-positive` + `text-text-on-positive`). Never pass a bare text
+ * colour to a badge; the pairing is what keeps contrast honest, and it is why
+ * these tones cannot be invented locally.
  *
- * Dropped: `BadgeList` / `NumberBadge` / the overlap-counter maths — a
- * prototype screen never has enough badges in a cell to need them.
+ * Dropped: `BadgeList` / `NumberBadge` / `BadgeListCount` and the overlap-counter
+ * maths — they exist to pack many badges into a live table cell, which a static
+ * prototype never does. The `Tooltip` they depend on went with them.
  *
- * Note the tones are background+text PAIRS. Never pass a bare text colour to a
- * badge; the pairing is what keeps contrast honest.
+ * `STATUS_LABELS` / `StatusBadge` below are ours, not axolotl's: the KeyShot
+ * document-status vocabulary, keyed to these tones.
  */
 
-export type BadgeTone =
-  | "neutral"
-  | "draft"
-  | "pending"
-  | "positive"
-  | "negative"
-  | "warning"
-  | "accent";
+const colorThemeClasses = {
+  default: "bg-status-default text-text-default",
+  pending: "bg-status-pending text-text-on-pending",
+  draft: "bg-status-draft text-text-on-draft",
+  positive: "bg-status-positive text-text-on-positive",
+  negative: "bg-status-negative text-text-on-negative",
+  inactive: "bg-status-inactive text-text-on-inactive",
+  progress: "bg-status-progress text-text-on-progress",
+  warning: "bg-status-warning text-text-on-warning",
+  inverted: "bg-status-counter text-text-white-on-dark",
+} as const;
 
-const toneClasses: Record<BadgeTone, string> = {
-  neutral: "bg-softFill text-text2",
-  draft: "bg-[#FFEDD4] text-[#7E2A0C]",
-  pending: "bg-[#DBEAFE] text-[#1C398E]",
-  positive: "bg-[#D0FAE5] text-[#016630]",
-  negative: "bg-[#FFE2E2] text-[#9F0712]",
-  warning: "bg-illustrative text-illustrative",
-  // Accent as a *fill* with the accessible accent as text. Never #FF6105 text.
-  accent: "bg-accentTint text-accentText",
-};
+export type BadgeColor = keyof typeof colorThemeClasses;
 
 export type BadgeProps = {
-  tone?: BadgeTone;
+  color?: BadgeColor;
   slotLeft?: React.ReactNode;
   bold?: boolean;
+  size?: React.ComponentProps<typeof Typography>["size"];
   className?: string;
   children: React.ReactNode;
 };
 
-export function Badge({ tone = "neutral", slotLeft, bold, className, children }: BadgeProps) {
+export function Badge({
+  color = "inactive",
+  slotLeft,
+  bold,
+  size = "xs",
+  className,
+  children,
+}: BadgeProps) {
   return (
     <Typography
-      size="xs"
+      size={size}
       bold={bold}
       className={cn(
         "inline-flex h-[21px] max-w-full items-center gap-1 overflow-hidden rounded-full px-2",
-        toneClasses[tone],
+        colorThemeClasses[color],
         slotLeft != null && "pl-1",
         className
       )}
@@ -82,19 +88,19 @@ export const STATUS_LABELS = {
 
 export type StatusKey = keyof typeof STATUS_LABELS;
 
-const STATUS_TONES: Record<StatusKey, BadgeTone> = {
+const STATUS_COLORS: Record<StatusKey, BadgeColor> = {
   DRAFT: "draft",
   APPROVAL_PENDING: "pending",
   APPROVED: "positive",
   POSTED: "positive",
   CLEARED: "positive",
-  PARTIALLY_CLEARED: "pending",
+  PARTIALLY_CLEARED: "progress",
   ARCHIVED: "negative",
 };
 
 export function StatusBadge({ status, className }: { status: StatusKey; className?: string }) {
   return (
-    <Badge tone={STATUS_TONES[status]} className={className}>
+    <Badge color={STATUS_COLORS[status]} className={className}>
       {STATUS_LABELS[status]}
     </Badge>
   );

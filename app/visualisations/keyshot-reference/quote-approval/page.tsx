@@ -22,6 +22,10 @@ import type { ScreenMeta } from "@/lib/visualisations";
  *
  * The data is mostly Illustrative on purpose — note that you can see which
  * parts are, without reading the source. That is the point of `Field`.
+ *
+ * Its sibling `invoice-review/` is the same vocabulary in Light's chrome. Read
+ * both: the primitives are shared, but the palette is not — this screen is on
+ * KeyShot's tokens, that one is on Light's.
  */
 
 /**
@@ -109,7 +113,7 @@ export default function QuoteApprovalScreen() {
           />
           <Typography as="p" size="xs" className="text-text3">
             Note the third row: <code className="rounded bg-softFill px-1">ARCHIVED</code> renders
-            as <Badge tone="negative">Void</Badge> — finance vocabulary, not &ldquo;Archived&rdquo;.
+            as <Badge color="negative">Void</Badge> — finance vocabulary, not &ldquo;Archived&rdquo;.
           </Typography>
         </section>
 
