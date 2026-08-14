@@ -77,10 +77,24 @@ A **Light** screen composes `LightChrome` + `DetailSheet` + `Table` + `Field` / 
 `bg-button-primary`. Those are not lookalikes: `lib/light-theme/` is copied byte-identical from
 Light's production frontend, so a screen written this way says exactly what production says. Light
 has **no brand orange** — neutral greys, a yellow selection accent, a pink→purple AI gradient
-(`Button intent="magic"`). KeyShot's `#FF6105` belongs to Salesforce chrome and to callouts.
+(`Button intent="magic"`).
 
-A **Salesforce** screen composes `SalesforceChrome` and stays on the KeyShot tokens in
-`lib/tokens.ts`.
+A **Salesforce** screen composes `SalesforceChrome` + `Path` / `RelatedList` / `DetailGrid` /
+`Toast` from `components/salesforce/`, and every class on it is one of SLDS's tokens —
+`bg-sf-card`, `text-sf-weak`, `border-sf-border`, `rounded-sf-lg`, `font-slds`. Those come from
+`lib/salesforce-theme/`, transcribed from the public Salesforce Lightning Design System. Give a
+staged record a `Path`; it is the element that makes a screen unmistakably Salesforce.
+
+**KeyShot's `#FF6105` / `#C64B03` go on neither shell.** They are for our own surfaces — the
+gallery, callouts, the framing round a screen. A customer's product painted in the consultant's
+brand colour is a mock-up of something that does not exist, and the room can tell: mocking a
+client's tools means the tools look like their tools. `ActionLog` takes a `chrome` prop for this
+reason — pass the shell the screen is in.
+
+One thing to be honest about on the Salesforce side: KeyShot's quoting in Salesforce is
+**custom-coded, not standard CPQ**. The chrome is accurate; any quote field layout you draw is
+your inference, and the `V`/`I`/`X` markers on individual fields cannot say that. Put it in
+`DetailGrid`'s `note`, the way `quote-approval/` does.
 
 Either way: **inventing a colour or hand-rolling a bespoke layout is wrong, not a judgement call.**
 If a shape you need is not in the vocabulary, compose the shapes that are. Reaching for a raw hex,

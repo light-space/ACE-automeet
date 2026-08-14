@@ -192,8 +192,17 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 
 | Component | Use when |
 |---|---|
-| `chrome/SalesforceChrome` | **Sales-facing.** Quotes, opportunities, approvals, accounts. Props: `objectType`, `recordTitle`, `appName`, `tabs`, `actions`. |
+| `chrome/SalesforceChrome` | **Sales-facing.** Quotes, opportunities, approvals, accounts. The Lightning record page: global header, app nav, record header with the **highlights panel**. Props: `objectType`, `recordTitle`, `appName`, `tabs`, `actions`, `highlights`. |
 | `chrome/LightChrome` | **Finance / back-office.** Invoices, ledger, entities. Props: `title`, `nav`, `tabs`, `actions`, `workspace`. |
+
+### Salesforce pieces — only inside `SalesforceChrome`
+
+| Component | Use when |
+|---|---|
+| `salesforce/Path` | The stage chevron strip. The most recognisable Lightning element — put one on anything with stages. Completed stages are **green**, not blue. |
+| `salesforce/RelatedList` | Records belonging to the record on screen. Carries the count and the View All footer, because leaving them out is what makes a lookalike look wrong. |
+| `salesforce/DetailGrid` | The Details tab: two-column field grid, label in weak text above value. Its `note` prop states the provenance of the *layout* — see below. |
+| `salesforce/Toast` | SLDS's solid-filled action feedback. Not for a PO warning: a toast disappears, and constraint 2 needs a `Callout` that does not. |
 
 ### UI
 
@@ -208,7 +217,7 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 | `ui/Checklist` | Readiness criteria, approval steps, "what's outstanding". |
 | `ui/Callout` | Inline advisory. **The warn-and-acknowledge component** — see constraint 2. |
 | `ui/TeamsCard` | Microsoft Teams notification mock-ups. See constraint 4. |
-| `ui/ActionLog` | Audit trails and activity feeds. Composes `ExportCsv` — see constraint 3. |
+| `ui/ActionLog` | Audit trails and activity feeds. Composes `ExportCsv` — see constraint 3. Pass `chrome="light"` or `chrome="salesforce"` to match the shell. |
 | `ui/ExportCsv` | The export control. The one `"use client"` component in the repo. |
 
 ### Status vocabulary
@@ -218,11 +227,24 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 
 ---
 
-## Two palettes: KeyShot's and Light's
+## Three palettes, and which one goes where
 
-There are two colour systems in this repo and they do not mix. Which one a class comes from is
-decided by **which chrome the screen is in**, and there is no third option — inventing a hex, a
+There are three colour systems in this repo and they do not mix. Which one a class comes from is
+decided by **which chrome the screen is in**, and there is no fourth option — inventing a hex, a
 new token or a bespoke layout is wrong, not a judgement call.
+
+| Palette | Source | Belongs to |
+|---|---|---|
+| Light's semantic tokens | `lib/light-theme/`, vendored byte-identical from axolotl | `LightChrome` screens |
+| SLDS | `lib/salesforce-theme/`, transcribed from the public design system | `SalesforceChrome` screens |
+| KeyShot's brand | `lib/tokens.ts` | **our** surfaces: the gallery, callouts, the framing round a screen |
+
+**The reason is not aesthetic.** These prototypes claim to show the client their own tools. A
+customer's product painted in the consultant's brand colour is a mock-up of something that does not
+exist, and the room can tell. Mocking a customer's tools means the tools look like their tools — so
+Light chrome is Light's neutrals, Salesforce chrome is Salesforce blue, and KeyShot's `#FF6105` /
+`#C64B03` appear on neither. A shared component that renders in more than one shell (`ActionLog`)
+takes a `chrome` prop rather than picking a side.
 
 ### Light screens use Light's own semantic tokens
 
@@ -255,7 +277,42 @@ right pairs — compose them rather than restyling.
 Production Light has no saturated brand primary: neutral greys, a yellow selection accent
 (`border-border-selected`), and a pink→purple AI gradient (`Button intent="magic"`). Painting Light
 chrome in KeyShot orange makes it look *less* like Light, which defeats the point of drawing it.
-KeyShot's `#FF6105` / `#C64B03` belong to `SalesforceChrome` and to callouts and accents.
+
+### Salesforce screens use SLDS's tokens
+
+`lib/salesforce-theme/` holds a small, sourced subset of the **Salesforce Lightning Design
+System** — SLDS is public, and it is the only source of truth we have for what Lightning
+Experience looks like. There is no Salesforce codebase to vendor from and the SLDS package is not
+a dependency here; see that folder's `README.md` for what was read, from which version, and the
+four places SLDS does not transfer cleanly.
+
+It is wired the same way Light's is — raw ramp → CSS variables → semantic names → Tailwind — so a
+Salesforce screen carries no hexes either:
+
+```
+surface   bg-sf-page   bg-sf-card
+text      text-sf-text   text-sf-weak   text-sf-link   text-sf-inverse
+brand     bg-sf-brand   bg-sf-brand-accessible   bg-sf-brand-deep   border-sf-border-brand
+border    border-sf-border   border-sf-border-strong
+status    bg-sf-success   bg-sf-error   bg-sf-warning   bg-sf-info
+radius    rounded-sf-sm   rounded-sf-md   rounded-sf-lg      type  font-slds
+```
+
+Two conventions carry the look: **white cards on the `bg-sf-page` grey floor** with 1px
+`border-sf-border` hairlines — the opposite of Light's 0.5px rules on a flat surface — and the
+system font stack (`font-slds`), never Inter. `SalesforceChrome` sets both for you.
+
+### What we know about KeyShot's Salesforce, and what we do not
+
+KeyShot's Salesforce quoting is **custom-coded, not standard CPQ** — their Group Finance Manager
+said so. So the chrome is accurate (SLDS is SLDS) but **any quote field layout we draw is
+inference**: we have never seen their page layout, and there is no standard one to copy.
+
+That is a different kind of invention from an invented value, and the per-field `V`/`I`/`X`
+markers cannot express it — every field can be honestly marked and the *arrangement* still be
+ours. So say it on the screen: `DetailGrid` takes a `note` for exactly this, and
+`quote-approval/` shows the wording. A screen that shows an inferred layout without saying so
+reads as a photograph of their system, which is precisely the claim we cannot make.
 
 ## KeyShot brand tokens
 
@@ -275,7 +332,7 @@ Full detail and rationale in **`lib/tokens.ts`**; the values live as CSS custom 
 | `softFill` | `#E5E4DF` | Inert fills, chips |
 | `surface` | `#FFFFFF` | Cards, panels |
 | `floor` | `#FAFAF8` | Page background |
-| `slate` | `#4A5568` | Salesforce-side neutral |
+| `slate` | `#4A5568` | Cool neutral for our own surfaces |
 
 Typeface is **Inter**, loaded in `app/layout.tsx` and wired to `font-sans`.
 
@@ -297,10 +354,10 @@ shipping unreadable copy.
 ❌  text-accent   style={{ color: "#FF6105" }}
 ```
 
-Use palette utilities only — KeyShot's on KeyShot surfaces, Light's on Light ones. No stock
-Tailwind colours (`text-gray-500`, `bg-blue-50`). The two
-documented exceptions are literal third-party chrome — Salesforce blue in `SalesforceChrome.tsx`
-and Teams purple in `TeamsCard.tsx` — both commented as such at their definition.
+Use palette utilities only — KeyShot's on our surfaces, Light's in Light chrome, SLDS's in
+Salesforce chrome. No stock Tailwind colours (`text-gray-500`, `bg-blue-50`). One raw hex survives
+in the whole repo: Teams purple in `TeamsCard.tsx`, commented as such at its definition, because a
+Teams notification is a third product and does not warrant a fourth token layer.
 
 ---
 
