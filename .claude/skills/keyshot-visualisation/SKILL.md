@@ -69,6 +69,24 @@ looking at an invoice status is still a salesperson, and still gets Salesforce c
 
 If a single screen genuinely serves two different users, that is usually a sign it is two screens.
 
+Chrome also decides your class vocabulary, because the two products do not share a palette.
+
+A **Light** screen composes `LightChrome` + `DetailSheet` + `Table` + `Field` / `Badge` / `Button` /
+`Typography`, and every class on it is one of Light's own semantic tokens — `bg-surface-level-1`,
+`text-text-secondary`, `border-b-0.5 border-border-secondary`, `bg-status-positive`,
+`bg-button-primary`. Those are not lookalikes: `lib/light-theme/` is copied byte-identical from
+Light's production frontend, so a screen written this way says exactly what production says. Light
+has **no brand orange** — neutral greys, a yellow selection accent, a pink→purple AI gradient
+(`Button intent="magic"`). KeyShot's `#FF6105` belongs to Salesforce chrome and to callouts.
+
+A **Salesforce** screen composes `SalesforceChrome` and stays on the KeyShot tokens in
+`lib/tokens.ts`.
+
+Either way: **inventing a colour or hand-rolling a bespoke layout is wrong, not a judgement call.**
+If a shape you need is not in the vocabulary, compose the shapes that are. Reaching for a raw hex,
+a stock Tailwind colour, or a hand-built div-and-border panel means the screen will read as neither
+product, which is worse than plain. `CLAUDE.md` lists the full vocabulary.
+
 ### 5. Mark provenance honestly, value by value
 
 Go through every value you are about to put on screen and classify it before you write it:

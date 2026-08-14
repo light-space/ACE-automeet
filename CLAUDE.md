@@ -14,9 +14,9 @@ There is no backend, no database, no auth, no data fetching. Every screen is a s
 rendering hardcoded props. If you find yourself adding an API route, stop — you have
 misunderstood the task.
 
-The worked example that shows the whole vocabulary is
-**`app/visualisations/keyshot-reference/quote-approval/page.tsx`** — read it before building
-anything.
+The worked examples that show the whole vocabulary are the two screens in
+**`app/visualisations/keyshot-reference/`** — `quote-approval/` in Salesforce chrome and
+`invoice-review/` in Light's. Read both before building anything.
 
 ---
 
@@ -193,7 +193,7 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 | Component | Use when |
 |---|---|
 | `chrome/SalesforceChrome` | **Sales-facing.** Quotes, opportunities, approvals, accounts. Props: `objectType`, `recordTitle`, `appName`, `tabs`, `actions`. |
-| `chrome/LightChrome` | **Finance / back-office.** Invoices, ledger, entities. Props: `title`, `nav`, `actions`, `workspace`. |
+| `chrome/LightChrome` | **Finance / back-office.** Invoices, ledger, entities. Props: `title`, `nav`, `tabs`, `actions`, `workspace`. |
 
 ### UI
 
@@ -201,9 +201,10 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 |---|---|
 | `ui/Field` | Any labelled data value. The provenance gate. Exports `Field`, `FieldValue`, `V`/`I`/`X`. |
 | `ui/Typography` | All text. `size` + `bold`; never hand-roll `text-sm font-bold`. |
-| `ui/Button` | Actions. `intent`: `primary` \| `secondary` \| `outline` \| `ghost`. Non-functional in prototypes. |
-| `ui/Badge` | Short status pills. Also exports `StatusBadge` + `STATUS_LABELS`. |
-| `ui/Table` | Tabular data. Columns take an optional `lucide` `icon` rendered before the header text — use it. Cells that are `ProvenancedValue` auto-badge. |
+| `ui/Button` | Actions. `intent`: `magic` \| `primary` \| `secondary` \| `outline` \| `ghost` \| `delete`. Non-functional in prototypes. |
+| `ui/Badge` | Short status pills. `color`: `default` \| `inactive` \| `draft` \| `pending` \| `progress` \| `positive` \| `negative` \| `warning` \| `inverted`. Also exports `StatusBadge` + `STATUS_LABELS`. |
+| `ui/Table` | Tabular data. Columns take an optional `lucide` `icon` rendered before the header text — use it. Cells that are `ProvenancedValue` auto-badge. Exports `TableColumnHeader` for a bespoke head. |
+| `ui/DetailSheet` | Light's two-column record sheet: sticky `h-16` bar, fields left, source document in a `rounded-2xl bg-surface-level-2` well on the right. The default shape for a finance record. |
 | `ui/Checklist` | Readiness criteria, approval steps, "what's outstanding". |
 | `ui/Callout` | Inline advisory. **The warn-and-acknowledge component** — see constraint 2. |
 | `ui/TeamsCard` | Microsoft Teams notification mock-ups. See constraint 4. |
@@ -217,7 +218,46 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 
 ---
 
-## Brand tokens
+## Two palettes: KeyShot's and Light's
+
+There are two colour systems in this repo and they do not mix. Which one a class comes from is
+decided by **which chrome the screen is in**, and there is no third option — inventing a hex, a
+new token or a bespoke layout is wrong, not a judgement call.
+
+### Light screens use Light's own semantic tokens
+
+`lib/light-theme/` holds five files copied **byte-identical** from Light's production frontend
+(axolotl @ `2eeea2714`) — see its `README.md`. `tailwind.config.cjs` maps them to the same class
+names production uses, and `<html className="light">` in `app/layout.tsx` selects the light theme
+(axolotl's `addBase` puts dark on `:root`, light on `.light`). Do not edit the vendored files.
+
+So a Light screen says exactly what production says:
+
+```
+surface   bg-surface-level-0   bg-surface-level-1   bg-surface-level-2
+text      text-text-default    text-text-secondary  text-text-tertiary
+icon      text-icon-secondary
+border    border-border-secondary   border-border-tertiary   border-border-selected
+status    bg-status-positive   bg-status-draft   bg-status-pending   bg-status-negative
+button    bg-button-primary    bg-button-secondary   bg-button-hover-alt1
+```
+
+Two conventions carry the look: **`border-b-0.5`** — the 0.5px hairline, Light's signature rule
+weight; a 1px border reads as a different product — and the radius ladder `rounded-[6px]` on
+controls, `rounded-lg` on panels, `rounded-2xl` on the document well.
+
+Status tones are background/foreground **pairs** (`bg-status-positive` + `text-text-on-positive`).
+Never pass a bare text colour to a badge. `Badge`, `Button` and `Typography` already encode the
+right pairs — compose them rather than restyling.
+
+### Light has no brand orange
+
+Production Light has no saturated brand primary: neutral greys, a yellow selection accent
+(`border-border-selected`), and a pink→purple AI gradient (`Button intent="magic"`). Painting Light
+chrome in KeyShot orange makes it look *less* like Light, which defeats the point of drawing it.
+KeyShot's `#FF6105` / `#C64B03` belong to `SalesforceChrome` and to callouts and accents.
+
+## KeyShot brand tokens
 
 Full detail and rationale in **`lib/tokens.ts`**; the values live as CSS custom properties in
 `app/globals.css` and are exposed as Tailwind utilities via `tailwind.config.cjs`.
@@ -247,15 +287,18 @@ It measures ~3.1:1 on `#FAFAF8` and fails WCAG AA for body text. It is a fill: b
 borders, rules, chart marks, large icon glyphs. **Accent text is `#C64B03` — `text-accentText`.**
 That is the entire reason two accent values exist.
 
-The `text-accent` Tailwind class is deliberately **not generated** (`tailwind.config.cjs` drops
-`accent` from `textColor`), so reaching for it fails loudly rather than shipping unreadable copy.
+The `text-accent` Tailwind class is deliberately **not generated**: `accent` is left out of
+`theme.extend.colors` entirely and registered per property (`backgroundColor`, `borderColor`,
+`ringColor`, `fill`, `stroke`) — never `textColor`. Reaching for it fails loudly rather than
+shipping unreadable copy.
 
 ```
 ✅  bg-accent   border-accent   text-accentText
 ❌  text-accent   style={{ color: "#FF6105" }}
 ```
 
-Use palette utilities only. No stock Tailwind colours (`text-gray-500`, `bg-blue-50`). The two
+Use palette utilities only — KeyShot's on KeyShot surfaces, Light's on Light ones. No stock
+Tailwind colours (`text-gray-500`, `bg-blue-50`). The two
 documented exceptions are literal third-party chrome — Salesforce blue in `SalesforceChrome.tsx`
 and Teams purple in `TeamsCard.tsx` — both commented as such at their definition.
 
