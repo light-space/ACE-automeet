@@ -13,6 +13,16 @@ const { colorsAsVariables } = require("./lib/light-theme/colorsAsVariables.js");
 const { sldsPaletteAsVariables } = require("./lib/salesforce-theme/paletteAsVariables.js");
 const { sldsTheme, sldsFontFamily } = require("./lib/salesforce-theme/theme.js");
 
+// The chrome context: one `--chrome-*` alias vocabulary, resolved differently
+// under each `data-chrome` scope. See lib/chrome-theme/README.md.
+const {
+  chromeKeyshot,
+  chromeLight,
+  chromeSalesforce,
+  chromeTeams,
+  chromeColors,
+} = require("./lib/chrome-theme/chromeContext.js");
+
 /**
  * Three palettes live here, and they do not mix.
  *
@@ -36,6 +46,12 @@ const { sldsTheme, sldsFontFamily } = require("./lib/salesforce-theme/theme.js")
  * saturated brand primary at all; Salesforce chrome is Salesforce blue. Mocking
  * a customer's tools means the tools look like their tools — the orange is what
  * makes each of them stop reading as itself.
+ *
+ * And one alias layer over all three: the `chrome` block, plus `border-rule`,
+ * `rounded-chrome-card` / `rounded-chrome-control` and `font-chrome`. A
+ * component that renders inside BOTH shells cannot name a palette — it says
+ * `bg-chrome-card` and the enclosing `data-chrome` scope decides which of the
+ * three that is. That is what makes picking a chrome pick the whole playbook.
  */
 
 const palette = {
@@ -258,19 +274,25 @@ module.exports = {
       // and then "removing" it from `textColor` does nothing: `text-accent`  guard-ok
       // still resolves. It has to be registered per property instead, which is
       // what the blocks below do. `textColor` is the one that never gets it.
-      colors: { ...paletteWithoutAccent, ...lightSemanticColors, sf: salesforceColors },
+      colors: {
+        ...paletteWithoutAccent,
+        ...lightSemanticColors,
+        sf: salesforceColors,
+        chrome: chromeColors,
+      },
       textColor: {
         ...paletteWithoutAccent,
         ...lightSemanticColors,
         sf: salesforceColors,
+        chrome: chromeColors,
         illustrative: "var(--ks-illustrative-text)",
       },
       backgroundColor: {
         accent: palette.accent,
         illustrative: "var(--ks-illustrative-bg)",
       },
-      borderColor: { accent: palette.accent },
-      ringColor: { accent: palette.accent },
+      borderColor: { accent: palette.accent, illustrative: "var(--ks-illustrative-edge)" },
+      ringColor: { accent: palette.accent, illustrative: "var(--ks-illustrative-edge)" },
       fill: { accent: palette.accent },
       stroke: { accent: palette.accent },
       fontFamily: {
@@ -279,14 +301,28 @@ module.exports = {
         // Salesforce screen is not quietly rendered in Inter — Salesforce is a
         // system-font product and the difference is a real tell.
         slds: sldsFontFamily,
+        // Whatever the enclosing chrome scope is set in. Only `TeamsCard` needs
+        // it — the two chromes set their own font on their root and everything
+        // inside them inherits it.
+        chrome: "var(--chrome-font)",
       },
       // 0.5px hairline. Light's signature rule weight — a 1px border reads as a
       // different product. Ported from axolotl alongside the radius conventions.
+      //
+      // `rule` is the chrome-aware one: 0.5px in Light, 1px in Salesforce. A
+      // shared component says `border-rule` / `border-b-rule` and gets the rule
+      // weight of the playbook it is in, which is half of why the two shells
+      // read as different products.
       borderWidth: {
         0.5: "0.5px",
+        rule: "var(--chrome-rule)",
       },
       borderRadius: {
         5: "5px",
+        // The chrome-aware radius ladder: Light's rounded-lg panels and 6px
+        // controls, SLDS's 8px cards and 4px controls, from one class.
+        "chrome-card": "var(--chrome-radius-card)",
+        "chrome-control": "var(--chrome-radius-control)",
         // SLDS `radiusBorder1..3` + circle. Salesforce's radii are tighter than
         // Light's ladder, which is part of why the two shells read differently.
         "sf-sm": "var(--sf-radius-small)",
@@ -315,8 +351,19 @@ module.exports = {
           // Light's unprefixed names and KeyShot's `--ks-*`.
           ...sldsPaletteAsVariables,
           ...sldsTheme,
+          // The chrome context's default. A component rendered outside both
+          // chromes — the gallery, a visualisation index — resolves here, to
+          // KeyShot's brand palette. See lib/chrome-theme/README.md.
+          ...chromeKeyshot,
         },
         ".light": lightTheme,
+        // Each chrome stamps one of these on its root; the aliases below it
+        // repoint at that playbook's palette for everything inside. Nested
+        // scopes win, which is how `TeamsCard` stays Teams-coloured inside
+        // either shell.
+        '[data-chrome="light"]': chromeLight,
+        '[data-chrome="salesforce"]': chromeSalesforce,
+        '[data-chrome="teams"]': chromeTeams,
       });
     }),
     plugin(function ({ addUtilities }) {
