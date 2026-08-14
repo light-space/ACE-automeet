@@ -164,6 +164,7 @@ export default function InvoiceReviewScreen() {
                 Audit trail
               </Typography>
               <ActionLog
+                chrome="light"
                 title="Invoice activity"
                 exportFilename="inv-10428-activity"
                 entries={[

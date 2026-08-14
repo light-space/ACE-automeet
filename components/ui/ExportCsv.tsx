@@ -73,7 +73,12 @@ export function ExportCsv({
 
   return (
     <Button intent="outline" onClick={handleExport} className={className}>
-      <Download size={14} strokeWidth={2} aria-hidden className="text-text2" />
+      {/* No colour class: the glyph inherits `currentColor` from the Button, so
+          it is whatever the surrounding chrome's text colour is. It used to be
+          pinned to `text-text2`, a KeyShot token, which meant this control
+          carried a KeyShot colour into Light and Salesforce chrome alike. A
+          control that appears in every shell has to be chrome-agnostic. */}
+      <Download size={14} strokeWidth={2} aria-hidden />
       {label}
     </Button>
   );

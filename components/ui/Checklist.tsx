@@ -54,7 +54,11 @@ export function Checklist({ items, title, className }: ChecklistProps) {
                 size={15}
                 strokeWidth={2}
                 aria-hidden
-                className={cn("mt-[3px] shrink-0", item.done ? "text-accentText" : "text-text3")}
+                // Neutral, not `text-accentText`. A checklist renders inside
+                // Light and Salesforce chrome, and KeyShot's accent belongs on
+                // KeyShot's own surfaces — the icon shape and the strike-through
+                // carry the done/not-done distinction on their own.
+                className={cn("mt-[3px] shrink-0", item.done ? "text-text2" : "text-text3")}
               />
 
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
