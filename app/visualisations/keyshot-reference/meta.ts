@@ -15,7 +15,7 @@ const meta: VisualisationMeta = {
   sourceTranscript: "none — hand-built by the Light team",
   date: "2026-08-12",
   blurb:
-    "The worked example. One sales-facing screen showing the whole component vocabulary: provenance markers, a missing purchase order handled as a warning, Teams notification, and an exportable audit trail. Read it before building a visualisation of your own.",
+    "The worked example, in both chromes. A sales-facing quote in Salesforce and a finance-facing invoice in Light, between them showing the whole component vocabulary: provenance markers, a missing purchase order handled as a warning, Teams notification, and an exportable audit trail. Read them before building a visualisation of your own.",
   reference: true,
 };
 
