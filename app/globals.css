@@ -41,8 +41,16 @@
 }
 
 @layer utilities {
-  /* Focus ring in brand accent. Accent as a *ring* is a fill, not text — allowed. */
+  /* Focus ring in brand accent. Accent as a *ring* is a fill, not text — allowed.
+     Used by KeyShot-side surfaces: the gallery, SalesforceChrome. */
   .focus-ring {
     @apply outline-none ring-offset-2 ring-offset-floor focus-visible:ring-2 focus-visible:ring-accent;
+  }
+
+  /* Light's focus ring, ported verbatim from axolotl `src/styles/globals.css`.
+     Used by the Light primitives (`ui/Button`) and Light chrome. Light has no
+     saturated brand primary, so its ring is `--border-focus`, not orange. */
+  .light-focus-ring {
+    @apply outline-none ring-border-focus transition-shadow focus:ring-1 focus-visible:outline-none focus-visible:ring-1;
   }
 }
