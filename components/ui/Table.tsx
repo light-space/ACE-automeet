@@ -19,6 +19,15 @@ import type { ProvenancedValue } from "@/lib/tokens";
  * cell routes through `FieldValue`, so Illustrative values badge themselves. Pass
  * a React node instead when the cell is chrome rather than data — a `Badge`, a
  * `Button`. Never interpolate a raw string into a cell; that defeats the gate.
+ *
+ * Surfaces, rules, radius and text all resolve through the chrome context, so
+ * the same table is a Light card with 0.5px hairlines inside `LightChrome` and
+ * a white SLDS card with 1px rules inside `SalesforceChrome`. It takes no
+ * palette prop.
+ *
+ * On a Salesforce screen, prefer `salesforce/RelatedList` when the rows are
+ * records BELONGING to the record on screen — that is the shape Lightning uses,
+ * and it carries the count and the View All footer. `Table` is the plain one.
  */
 
 /**
@@ -49,14 +58,14 @@ export function TableColumnHeader({
       as="span"
       size="sm"
       className={cn(
-        "flex items-center gap-1 text-text-secondary",
+        "flex items-center gap-1 text-chrome-weak",
         align === "center" && "justify-center",
         align === "right" && "flex-row-reverse",
         className
       )}
     >
-      {Icon && <Icon className="h-4 w-4 flex-shrink-0 stroke-1.5 text-icon-secondary" />}
-      <span className="truncate text-text-secondary">{title}</span>
+      {Icon && <Icon className="h-4 w-4 flex-shrink-0 stroke-1.5 text-chrome-icon" />}
+      <span className="truncate text-chrome-weak">{title}</span>
       {slotEnd ?? null}
     </Typography>
   );
@@ -93,13 +102,13 @@ export function Table({ columns, rows, caption, className }: TableProps) {
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-5 border-0.5 border-hairline bg-surface",
+        "overflow-hidden rounded-chrome-card border-rule border-chrome-border bg-chrome-card",
         className
       )}
     >
       {caption && (
-        <div className="border-b-0.5 border-hairline px-4 py-3">
-          <Typography as="h3" size="sm" bold className="text-ink">
+        <div className="border-b-rule border-chrome-border px-4 py-3">
+          <Typography as="h3" size="sm" bold className="text-chrome-text">
             {caption}
           </Typography>
         </div>
@@ -108,7 +117,7 @@ export function Table({ columns, rows, caption, className }: TableProps) {
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b-0.5 border-hairline bg-floor">
+            <tr className="border-b-rule border-chrome-border bg-chrome-floor">
               {columns.map((column) => (
                 <th
                   key={column.key}
@@ -132,7 +141,7 @@ export function Table({ columns, rows, caption, className }: TableProps) {
             {rows.map((row, rowIndex) => (
               <tr
                 key={rowIndex}
-                className="border-b-0.5 border-hairline last:border-b-0 hover:bg-floor"
+                className="border-b-rule border-chrome-border last:border-b-0 hover:bg-chrome-row-hover"
               >
                 {columns.map((column) => {
                   const cell = row[column.key];

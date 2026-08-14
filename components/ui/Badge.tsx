@@ -7,11 +7,32 @@ import { Typography } from "@/components/ui/Typography";
  * Ported from axolotl `src/components/ui/Badge.tsx` @ 2eeea2714.
  *
  * Kept: the `h-[21px] rounded-full px-2` pill, the `slotLeft` icon slot, the
- * `truncate` label, and — the part that matters — axolotl's `color` vocabulary
- * mapped onto Light's real status tokens. Each entry is a background/foreground
- * PAIR (`bg-status-positive` + `text-text-on-positive`). Never pass a bare text
+ * `truncate` label, and — the part that matters — axolotl's `color` vocabulary,
+ * where each entry is a background/foreground PAIR. Never pass a bare text
  * colour to a badge; the pairing is what keeps contrast honest, and it is why
  * these tones cannot be invented locally.
+ *
+ * ── The tones come from the chrome, not from here ───────────────────────────
+ * The pairs below used to be Light's status tokens, hardcoded. A status pill is
+ * one of the most-repeated shapes on a screen, so that put Light's soft pastel
+ * pills on every Salesforce record in the repo — the single most visible way
+ * these prototypes stopped looking like the customer's tools.
+ *
+ * Now each pair resolves through the chrome context, so the same `<StatusBadge
+ * status="APPROVED" />` is Light's `status-positive` green wash inside
+ * `LightChrome` and SLDS's solid `theme_success` inside `SalesforceChrome`.
+ * **There is no `color`-to-hex mapping in this file and no palette prop.** The
+ * nine names below are a vocabulary of MEANING; `lib/chrome-theme/` decides
+ * what each one looks like in each playbook.
+ *
+ * Two consequences worth knowing before you reach for a tone:
+ *   - Salesforce has no nine-tone ramp. SLDS themes success / warning / error
+ *     and leaves the rest neutral or brand-tinted, so `draft`, `inactive` and
+ *     `default` read alike there and the LABEL carries the meaning. That is
+ *     Lightning, not a gap to paper over.
+ *   - Outside both chromes (the gallery) the tones collapse to KeyShot's
+ *     neutrals plus the accent, because KeyShot's brand palette has no status
+ *     ramp and inventing one is forbidden.
  *
  * Dropped: `BadgeList` / `NumberBadge` / `BadgeListCount` and the overlap-counter
  * maths — they exist to pack many badges into a live table cell, which a static
@@ -22,15 +43,15 @@ import { Typography } from "@/components/ui/Typography";
  */
 
 const colorThemeClasses = {
-  default: "bg-status-default text-text-default",
-  pending: "bg-status-pending text-text-on-pending",
-  draft: "bg-status-draft text-text-on-draft",
-  positive: "bg-status-positive text-text-on-positive",
-  negative: "bg-status-negative text-text-on-negative",
-  inactive: "bg-status-inactive text-text-on-inactive",
-  progress: "bg-status-progress text-text-on-progress",
-  warning: "bg-status-warning text-text-on-warning",
-  inverted: "bg-status-counter text-text-white-on-dark",
+  default: "bg-chrome-status-default text-chrome-on-default",
+  pending: "bg-chrome-status-pending text-chrome-on-pending",
+  draft: "bg-chrome-status-draft text-chrome-on-draft",
+  positive: "bg-chrome-status-positive text-chrome-on-positive",
+  negative: "bg-chrome-status-negative text-chrome-on-negative",
+  inactive: "bg-chrome-status-inactive text-chrome-on-inactive",
+  progress: "bg-chrome-status-progress text-chrome-on-progress",
+  warning: "bg-chrome-status-warning text-chrome-on-warning",
+  inverted: "bg-chrome-status-inverted text-chrome-on-inverted",
 } as const;
 
 export type BadgeColor = keyof typeof colorThemeClasses;

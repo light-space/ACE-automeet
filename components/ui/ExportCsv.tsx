@@ -73,11 +73,12 @@ export function ExportCsv({
 
   return (
     <Button intent="outline" onClick={handleExport} className={className}>
-      {/* No colour class: the glyph inherits `currentColor` from the Button, so
-          it is whatever the surrounding chrome's text colour is. It used to be
-          pinned to `text-text2`, a KeyShot token, which meant this control
-          carried a KeyShot colour into Light and Salesforce chrome alike. A
-          control that appears in every shell has to be chrome-agnostic. */}
+      {/* No colour class anywhere in this file. The glyph inherits
+          `currentColor` from the Button, and the Button takes its fill, label
+          and outline from the chrome context — so this control is a Light
+          outline button in Light chrome and Lightning's white-fill neutral
+          button in Salesforce chrome, without being told which. A control that
+          appears on every log screen in both shells cannot name a palette. */}
       <Download size={14} strokeWidth={2} aria-hidden />
       {label}
     </Button>

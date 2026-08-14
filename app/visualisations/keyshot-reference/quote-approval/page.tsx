@@ -218,7 +218,6 @@ export default function QuoteApprovalScreen() {
             Audit trail
           </Typography>
           <ActionLog
-            chrome="salesforce"
             title="Quote activity"
             exportFilename="q-10428-activity"
             entries={[

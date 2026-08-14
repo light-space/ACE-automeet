@@ -3,6 +3,7 @@ import React from "react";
 import { Bell, ChevronDown, Grip, HelpCircle, Search, Settings, Star } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { chromeScope } from "@/components/chrome/ChromeContext";
 import { FieldValue } from "@/components/ui/Field";
 import { Typography } from "@/components/ui/Typography";
 import type { ProvenancedValue } from "@/lib/tokens";
@@ -40,6 +41,14 @@ import type { ProvenancedValue } from "@/lib/tokens";
  *
  * Typography is the SLDS system stack (`font-slds`), not Inter. It is a quiet
  * tell, and quiet tells are most of what makes a shell recognisable.
+ *
+ * ── This component opens the Salesforce playbook ────────────────────────────
+ * `chromeScope("salesforce")` on the root is not decoration. Every shared
+ * component inside it — `Field`, `Badge`, `Table`, `Callout`, `Checklist`,
+ * `ActionLog`, `Button` — resolves its own tokens from SLDS because of that one
+ * attribute. **Wrapping a screen in this chrome is the entire act of choosing
+ * its palette**; nothing below takes a colour or a `chrome` prop. See
+ * `components/chrome/ChromeContext.tsx`.
  */
 
 export type SalesforceHighlight = {
@@ -81,7 +90,10 @@ export function SalesforceChrome({
   const monogram = (objectIcon ?? objectType.slice(0, 2)).toUpperCase();
 
   return (
-    <div className={cn("flex min-h-full flex-col bg-sf-page font-slds", className)}>
+    <div
+      {...chromeScope("salesforce")}
+      className={cn("flex min-h-full flex-col bg-sf-page font-slds", className)}
+    >
       <GlobalHeader />
       <AppNav appName={appName} tabs={tabs} />
 

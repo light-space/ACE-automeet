@@ -11,12 +11,19 @@ import { cn } from "@/lib/cn";
  * `text-sm font-bold` on a raw <span>.
  *
  * Kept: the full `size` scale (3xs…5xl, including the odd `15`), `bold`, the
- * polymorphic `as`, and the base class `text-text-default` — Light's semantic
- * default text token, not a hex and not a KeyShot token.
+ * polymorphic `as`, and axolotl's habit of putting a default text colour on the
+ * base class rather than leaving it to inherit.
  *
  * Changed: axolotl's `As` / `WithAs` / `WithChildren` globals do not exist
  * here, so `as` is narrowed to the tags a static screen actually needs, and
  * `size` defaults to `sm` rather than being required.
+ *
+ * The base colour is `text-chrome-text` — the enclosing chrome's default text,
+ * whichever playbook that is. It used to be `text-text-default`, one of Light's
+ * tokens, which meant every unstyled word on a Salesforce screen was quietly
+ * Light-coloured. There is no `color` prop and there should not be one: pass a
+ * `text-chrome-*` class when a piece of text is weak or inverted, and let the
+ * chrome decide what those are.
  */
 
 export type TypographySize =
@@ -81,7 +88,7 @@ export const Typography = React.forwardRef<HTMLElement, TypographyProps>(
   ) {
     return React.createElement(
       as,
-      { ...rest, ref, className: cn("text-text-default", typography({ size, bold }), className) },
+      { ...rest, ref, className: cn("text-chrome-text", typography({ size, bold }), className) },
       children
     );
   }

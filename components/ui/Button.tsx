@@ -16,10 +16,22 @@ import { cn } from "@/lib/cn";
  * branch of the polymorphic `as` type. Neither earns its weight in a static
  * prototype — there is nothing to hover and nothing to navigate to.
  *
- * Note what is NOT here: a saturated brand fill. Light has no orange primary.
- * `intent="primary"` is `bg-button-primary`, a near-black neutral. Painting
- * this orange is how Light chrome stops looking like Light — KeyShot's
- * #FF6105 belongs to `SalesforceChrome` and to callouts, not here.
+ * ── The fills come from the chrome, the geometry does not ───────────────────
+ * A button appears on every screen in both shells, and the two products draw it
+ * differently in a way a reader clocks instantly: Light's `primary` is a
+ * near-black neutral (Light has no saturated brand primary at all), while
+ * Lightning's is `brand-accessible` blue and its neutral button is a WHITE fill
+ * with a grey outline and a blue label, not a grey fill. This file used to
+ * hardcode Light's version of both, so every Salesforce screen carried Light's
+ * buttons.
+ *
+ * So the fills, text pairs, radius and focus ring resolve through the chrome
+ * context. **There is no palette prop and no `intent="brand"`.** KeyShot's
+ * #FF6105 appears on neither shell — it belongs on our own surfaces.
+ *
+ * `intent="magic"` is the exception and stays Light's: the pink→purple gradient
+ * is a specific Light affordance for AI actions, not a generic one. It has no
+ * Salesforce equivalent, so do not reach for it on a Salesforce screen.
  */
 
 export type ButtonIntent =
@@ -37,22 +49,26 @@ export type ButtonStyleVariants = {
 };
 
 export const buttonVariants = cva(
-  "relative flex h-8 cursor-pointer select-none items-center justify-center gap-2 rounded-[6px] px-3 text-text-default transition",
+  "relative flex h-8 cursor-pointer select-none items-center justify-center gap-2 rounded-chrome-control px-3 text-chrome-text transition",
   {
     variants: {
       intent: {
+        // Light's AI gradient, kept verbatim. The one intent that does not
+        // follow the chrome — see the note at the top of this file.
         magic:
           "rounded-[6px] text-text-white-on-dark group-disabled:text-text-on-disabled-magic group-disabled:[&>svg]:text-icon-on-disabled-magic",
         primary:
-          "bg-button-primary text-text-inverted hover:bg-button-hover-default active:bg-button-pressed-default group-disabled:bg-button-inactive-default group-disabled:text-text-tertiary",
+          "bg-chrome-button-primary text-chrome-on-button-primary hover:bg-chrome-button-primary-hover group-disabled:opacity-50",
         secondary:
-          "bg-button-secondary text-text-default hover:bg-button-hover-alt1 active:bg-button-pressed-alt1 group-disabled:bg-button-inactive-alt1 group-disabled:text-text-tertiary",
+          "bg-chrome-button-secondary text-chrome-on-button-secondary hover:bg-chrome-button-hover active:bg-chrome-button-pressed group-disabled:text-chrome-faint",
         outline:
-          "border border-border-default bg-transparent text-text-default hover:border-border-hover active:bg-button-pressed-alt1 group-disabled:border-border-tertiary group-disabled:text-text-tertiary",
+          // 1px, not `border-rule`: the 0.5px hairline is Light's RULE weight,
+          // between rows and panels. Both products outline a control at 1px.
+          "border border-chrome-border-strong bg-chrome-card text-chrome-link hover:bg-chrome-button-hover active:bg-chrome-button-pressed group-disabled:border-chrome-border group-disabled:text-chrome-faint",
         ghost:
-          "hover:bg-button-hover-alt1 active:bg-button-pressed-alt1 group-disabled:text-text-tertiary",
+          "hover:bg-chrome-button-hover active:bg-chrome-button-pressed group-disabled:text-chrome-faint",
         delete:
-          "bg-button-negative text-text-white-on-dark hover:bg-button-negative-hover active:bg-button-negative-pressed group-disabled:bg-button-negative-disabled",
+          "bg-chrome-button-negative text-chrome-on-button-negative hover:opacity-90 group-disabled:opacity-50",
       },
       square: { true: "w-8 p-0" },
       fullWidth: { true: "w-full" },
@@ -80,7 +96,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       aria-disabled={disabled}
       className={cn(
         "group relative h-8 shrink-0 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed",
-        intent !== "magic" && "light-focus-ring rounded-[6px]",
+        intent !== "magic" && "chrome-focus-ring rounded-chrome-control",
         intent === "magic" && "outline-none focus-visible:outline-none",
         fullWidth && "w-full",
         containerClassName

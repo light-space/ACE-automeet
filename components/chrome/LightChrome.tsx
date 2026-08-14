@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { chromeScope } from "@/components/chrome/ChromeContext";
 import { Typography } from "@/components/ui/Typography";
 
 /**
@@ -38,8 +39,16 @@ import { Typography } from "@/components/ui/Typography";
  * Every colour here is one of Light's semantic tokens. **There is no saturated
  * brand primary in Light chrome** — neutral greys, a yellow selection accent
  * (`border-selected`), and the pink→purple AI gradient on `Button intent="magic"`.
- * KeyShot's orange belongs to `SalesforceChrome` and to callouts. Painting this
- * shell orange is exactly how it stops reading as Light.
+ * KeyShot's orange belongs on our own surfaces, not on either product's shell.
+ * Painting this one orange is exactly how it stops reading as Light.
+ *
+ * ── This component opens the Light playbook ─────────────────────────────────
+ * `chromeScope("light")` on the root is not decoration. Every shared component
+ * inside it — `Field`, `Badge`, `Table`, `Callout`, `Checklist`, `ActionLog`,
+ * `Button` — resolves its own tokens from Light's palette because of that one
+ * attribute. **Wrapping a screen in this chrome is the entire act of choosing
+ * its palette**; nothing below takes a colour or a `chrome` prop. See
+ * `components/chrome/ChromeContext.tsx`.
  */
 
 export type LightNavItem = {
@@ -84,6 +93,7 @@ export function LightChrome({
 }: LightChromeProps) {
   return (
     <div
+      {...chromeScope("light")}
       className={cn(
         // axolotl's shell is fixed to the viewport and scrolls *inside* the
         // content card (a ScrollArea there). Reproduced with a plain

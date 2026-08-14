@@ -25,13 +25,19 @@ import type { ProvenancedValue } from "@/lib/tokens";
  * This stays a server component; `ExportCsv` carries its own `"use client"`
  * boundary, and importing a client component from a server component is fine.
  *
- * ── Why this component knows which chrome it is in ──────────────────────────
+ * ── This component used to take a `chrome` prop. It does not any more ───────
  * An audit trail is one of the few shapes that appears in BOTH shells — sales
- * approvals in Salesforce, invoice history in Light. It used to render the same
- * card in both, in KeyShot's tokens, with the timeline dots in brand orange.
- * That was wrong in both places: KeyShot's orange belongs to KeyShot's own
- * surfaces, not painted onto a third party's product chrome. So `chrome`
- * selects the palette, and there is no orange in any of the three.
+ * approvals in Salesforce, invoice history in Light — so it needed to know
+ * which palette to draw itself in, and it was told: `chrome="salesforce"`.
+ *
+ * That worked and was still the wrong shape. A prop is something a screen
+ * author can forget, and forgetting it put a Light-toned card on a Salesforce
+ * record with no error anywhere. Every other shared component would have needed
+ * the same prop, threaded through every screen, correct every time.
+ *
+ * Now the chrome the component is INSIDE decides — `bg-chrome-card`,
+ * `bg-chrome-marker`, `border-rule` — so there is nothing to pass and nothing
+ * to get wrong. See `components/chrome/ChromeContext.tsx`.
  */
 
 export type ActionLogEntry = {
@@ -42,59 +48,12 @@ export type ActionLogEntry = {
   detail?: ProvenancedValue;
 };
 
-/**
- * Which shell this log is rendering inside. Pass the one that matches the
- * chrome the screen wraps itself in — `keyshot` is for our own surfaces (the
- * gallery, a framing page), not for a screen in either product's chrome.
- */
-export type ActionLogChrome = "keyshot" | "light" | "salesforce";
-
-type ChromeSpec = {
-  card: string;
-  rule: string;
-  title: string;
-  body: string;
-  dot: string;
-  connector: string;
-};
-
-const chromeSpecs: Record<ActionLogChrome, ChromeSpec> = {
-  keyshot: {
-    card: "rounded-5 border-0.5 border-hairline bg-surface",
-    rule: "border-b-0.5 border-hairline",
-    title: "text-ink",
-    body: "text-text2",
-    // Was `bg-accent`. A timeline dot is a fill, so the colour rule permitted
-    // it — but the orange still does not belong on a product shell.
-    dot: "bg-text3",
-    connector: "bg-hairline",
-  },
-  light: {
-    card: "rounded-lg border-0.5 border-border-secondary bg-surface-level-1",
-    rule: "border-b-0.5 border-border-secondary",
-    title: "text-text-default",
-    body: "text-text-secondary",
-    dot: "bg-icon-secondary",
-    connector: "bg-border-secondary",
-  },
-  salesforce: {
-    card: "rounded-sf-lg border border-sf-border bg-sf-card font-slds",
-    rule: "border-b border-sf-border",
-    title: "text-sf-text",
-    body: "text-sf-weak",
-    dot: "bg-sf-brand",
-    connector: "bg-sf-border-strong",
-  },
-};
-
 export type ActionLogProps = {
   entries: ActionLogEntry[];
   /** Static heading. Defaults to "Activity log". */
   title?: string;
   /** Base name for the exported file. `.csv` is appended. */
   exportFilename?: string;
-  /** Palette to render in. Match the screen's chrome. */
-  chrome?: ActionLogChrome;
   className?: string;
 };
 
@@ -104,10 +63,8 @@ export function ActionLog({
   entries,
   title = "Activity log",
   exportFilename = "activity-log",
-  chrome = "keyshot",
   className,
 }: ActionLogProps) {
-  const spec = chromeSpecs[chrome];
   const csvRows = entries.map((entry) => [
     entry.at.v,
     entry.actor.v,
@@ -116,9 +73,14 @@ export function ActionLog({
   ]);
 
   return (
-    <div className={cn(spec.card, className)}>
-      <div className={cn("flex items-center justify-between gap-3 px-4 py-3", spec.rule)}>
-        <Typography as="h3" size="sm" bold className={spec.title}>
+    <div
+      className={cn(
+        "rounded-chrome-card border-rule border-chrome-border bg-chrome-card",
+        className
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b-rule border-chrome-border px-4 py-3">
+        <Typography as="h3" size="sm" bold className="text-chrome-text">
           {title}
         </Typography>
         <ExportCsv filename={exportFilename} headers={CSV_HEADERS} rows={csvRows} />
@@ -132,16 +94,18 @@ export function ActionLog({
               {/* Timeline rail: dot plus the connector down to the next entry. */}
               <div className="flex w-3 shrink-0 flex-col items-center">
                 <span
-                  className={cn("mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full", spec.dot)}
+                  className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-chrome-marker"
                   aria-hidden
                 />
-                {!isLast && <span className={cn("w-px flex-1", spec.connector)} aria-hidden />}
+                {!isLast && (
+                  <span className="w-px flex-1 bg-chrome-border-strong" aria-hidden />
+                )}
               </div>
 
               <div className={cn("flex min-w-0 flex-1 flex-col gap-0.5", !isLast && "pb-4")}>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                   <FieldValue value={entry.actor} />
-                  <Typography as="span" size="sm" className={spec.body}>
+                  <Typography as="span" size="sm" className="text-chrome-weak">
                     {entry.action}
                   </Typography>
                 </div>
