@@ -69,37 +69,45 @@ looking at an invoice status is still a salesperson, and still gets Salesforce c
 
 If a single screen genuinely serves two different users, that is usually a sign it is two screens.
 
-Chrome also decides your class vocabulary, because the two products do not share a palette.
+**That one choice is the whole design decision.** The chrome you wrap a screen in selects a
+playbook, and everything under it follows automatically: the shared components read the chrome they
+are inside and draw themselves in that product's surfaces, rules, radii, buttons and status tones.
+`<StatusBadge status="APPROVED" />` is written identically on both screens and renders as Light's
+status wash on one and a solid SLDS pill on the other.
+
+So there is nothing to pass down. **No component takes a colour, a palette or a `chrome` prop**, and
+you should not want one — wanting to tell a component which palette to use means you have already
+told it, by choosing the chrome.
 
 A **Light** screen composes `LightChrome` + `DetailSheet` + `Table` + `Field` / `Badge` / `Button` /
-`Typography`, and every class on it is one of Light's own semantic tokens — `bg-surface-level-1`,
-`text-text-secondary`, `border-b-0.5 border-border-secondary`, `bg-status-positive`,
-`bg-button-primary`. Those are not lookalikes: `lib/light-theme/` is copied byte-identical from
-Light's production frontend, so a screen written this way says exactly what production says. Light
-has **no brand orange** — neutral greys, a yellow selection accent, a pink→purple AI gradient
-(`Button intent="magic"`).
+`Typography`, and the classes you write on the screen itself are Light's own semantic tokens —
+`bg-surface-level-1`, `text-text-secondary`, `border-b-0.5 border-border-secondary`. Those are not
+lookalikes: `lib/light-theme/` is copied byte-identical from Light's production frontend, so a
+screen written this way says exactly what production says. Light has **no brand orange** — neutral
+greys, a yellow selection accent, a pink→purple AI gradient (`Button intent="magic"`, and only
+here).
 
 A **Salesforce** screen composes `SalesforceChrome` + `Path` / `RelatedList` / `DetailGrid` /
-`Toast` from `components/salesforce/`, and every class on it is one of SLDS's tokens —
-`bg-sf-card`, `text-sf-weak`, `border-sf-border`, `rounded-sf-lg`, `font-slds`. Those come from
+`Toast` from `components/salesforce/`, and its own classes are SLDS's — `bg-sf-card`,
+`text-sf-weak`, `border-sf-border`, `rounded-sf-lg`, `font-slds`. Those come from
 `lib/salesforce-theme/`, transcribed from the public Salesforce Lightning Design System. Give a
 staged record a `Path`; it is the element that makes a screen unmistakably Salesforce.
 
 **KeyShot's `#FF6105` / `#C64B03` go on neither shell.** They are for our own surfaces — the
-gallery, callouts, the framing round a screen. A customer's product painted in the consultant's
-brand colour is a mock-up of something that does not exist, and the room can tell: mocking a
-client's tools means the tools look like their tools. `ActionLog` takes a `chrome` prop for this
-reason — pass the shell the screen is in.
+gallery, the framing round a screen. A customer's product painted in the consultant's brand colour
+is a mock-up of something that does not exist, and the room can tell: mocking a client's tools means
+the tools look like their tools.
 
 One thing to be honest about on the Salesforce side: KeyShot's quoting in Salesforce is
 **custom-coded, not standard CPQ**. The chrome is accurate; any quote field layout you draw is
 your inference, and the `V`/`I`/`X` markers on individual fields cannot say that. Put it in
 `DetailGrid`'s `note`, the way `quote-approval/` does.
 
-Either way: **inventing a colour or hand-rolling a bespoke layout is wrong, not a judgement call.**
-If a shape you need is not in the vocabulary, compose the shapes that are. Reaching for a raw hex,
-a stock Tailwind colour, or a hand-built div-and-border panel means the screen will read as neither
-product, which is worse than plain. `CLAUDE.md` lists the full vocabulary.
+Either way: **inventing a colour, reaching into the other playbook, or hand-rolling a bespoke
+layout is wrong, not a judgement call.** If a shape you need is not in the vocabulary, compose the
+shapes that are. A raw hex, a stock Tailwind colour, a Light class on a Salesforce screen or a
+hand-built div-and-border panel all mean the screen reads as neither product, which is worse than
+plain. `CLAUDE.md` lists the full vocabulary.
 
 ### 5. Mark provenance honestly, value by value
 
@@ -158,7 +166,7 @@ violation, fix the file rather than working around it.
 ## Before you call it done
 
 - Every screen names a pain point from the transcript. None is filler.
-- Chrome matches the user, not the data.
+- Chrome matches the user, not the data — and nothing under it was told a colour by hand.
 - No raw value interpolated into JSX — everything a reader could mistake for a fact goes through
   `Field` / `FieldValue`.
 - Nothing marked `V` that you cannot point at a transcript line for.

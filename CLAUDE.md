@@ -195,6 +195,9 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 | `chrome/SalesforceChrome` | **Sales-facing.** Quotes, opportunities, approvals, accounts. The Lightning record page: global header, app nav, record header with the **highlights panel**. Props: `objectType`, `recordTitle`, `appName`, `tabs`, `actions`, `highlights`. |
 | `chrome/LightChrome` | **Finance / back-office.** Invoices, ledger, entities. Props: `title`, `nav`, `tabs`, `actions`, `workspace`. |
 
+Choosing one is not just picking a header. It selects the whole playbook everything under it draws
+itself from — see "Two playbooks" below.
+
 ### Salesforce pieces — only inside `SalesforceChrome`
 
 | Component | Use when |
@@ -217,8 +220,11 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 | `ui/Checklist` | Readiness criteria, approval steps, "what's outstanding". |
 | `ui/Callout` | Inline advisory. **The warn-and-acknowledge component** — see constraint 2. |
 | `ui/TeamsCard` | Microsoft Teams notification mock-ups. See constraint 4. |
-| `ui/ActionLog` | Audit trails and activity feeds. Composes `ExportCsv` — see constraint 3. Pass `chrome="light"` or `chrome="salesforce"` to match the shell. |
+| `ui/ActionLog` | Audit trails and activity feeds. Composes `ExportCsv` — see constraint 3. |
 | `ui/ExportCsv` | The export control. The one `"use client"` component in the repo. |
+
+None of these takes a colour or a palette prop; the chrome they are inside decides. See "Two
+playbooks" below.
 
 ### Status vocabulary
 
@@ -227,24 +233,56 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 
 ---
 
-## Three palettes, and which one goes where
+## Two playbooks
 
-There are three colour systems in this repo and they do not mix. Which one a class comes from is
-decided by **which chrome the screen is in**, and there is no fourth option — inventing a hex, a
-new token or a bespoke layout is wrong, not a judgement call.
+There are two design playbooks here, and **picking a chrome is the entire act of picking one.**
+Wrap the screen in `LightChrome` or `SalesforceChrome` and everything underneath follows —
+surfaces, rules, radii, buttons, status tones, the lot.
 
-| Palette | Source | Belongs to |
+| | Light playbook | Salesforce playbook |
 |---|---|---|
-| Light's semantic tokens | `lib/light-theme/`, vendored byte-identical from axolotl | `LightChrome` screens |
-| SLDS | `lib/salesforce-theme/`, transcribed from the public design system | `SalesforceChrome` screens |
-| KeyShot's brand | `lib/tokens.ts` | **our** surfaces: the gallery, callouts, the framing round a screen |
+| Pick it when | the user is **finance / back-office** | the user is **sales** |
+| Shell | `chrome/LightChrome` | `chrome/SalesforceChrome` |
+| Its own pieces | `ui/DetailSheet` | `salesforce/Path` · `RelatedList` · `DetailGrid` · `Toast` |
+| Palette | `lib/light-theme/`, vendored byte-identical from axolotl | `lib/salesforce-theme/`, transcribed from public SLDS |
+| Class vocabulary | `bg-surface-level-1` `text-text-secondary` `bg-status-positive` | `bg-sf-card` `text-sf-weak` `border-sf-border` `font-slds` |
+| Signature | 0.5px hairlines on a flat surface; `rounded-[6px]` → `rounded-lg` → `rounded-2xl` | white cards on the grey `bg-sf-page` floor; 1px rules; system font |
+| Has no | saturated brand primary of any kind | KeyShot orange |
 
 **The reason is not aesthetic.** These prototypes claim to show the client their own tools. A
 customer's product painted in the consultant's brand colour is a mock-up of something that does not
-exist, and the room can tell. Mocking a customer's tools means the tools look like their tools — so
-Light chrome is Light's neutrals, Salesforce chrome is Salesforce blue, and KeyShot's `#FF6105` /
-`#C64B03` appear on neither. A shared component that renders in more than one shell (`ActionLog`)
-takes a `chrome` prop rather than picking a side.
+exist, and the room can tell. Mocking a customer's tools means the tools look like their tools.
+
+### No component takes a colour or a palette prop
+
+The chrome decides. `LightChrome` and `SalesforceChrome` open a **chrome scope**
+(`components/chrome/ChromeContext.tsx`), and every shared component inside one — `Field`, `Badge`,
+`Table`, `Callout`, `Checklist`, `ActionLog`, `Button`, `Typography`, `ExportCsv` — resolves its own
+tokens from the surrounding playbook. The same `<StatusBadge status="APPROVED" />` is a Light
+status wash in one shell and a solid SLDS `theme_success` pill in the other, and you write it
+identically both times.
+
+So: **if you find yourself wanting to tell a shared component which palette to use, the answer is
+that you already did, by choosing the chrome.** There is no `chrome` prop, no `color` prop, no
+`palette` prop, and adding one would put back exactly the bug this removed — one screen forgetting
+to pass it and shipping a Light-toned pill on a Salesforce record.
+
+Classes you write *on the screen itself* still name the playbook directly (`text-sf-weak` on a
+Salesforce screen, `text-text-secondary` on a Light one) — a screen knows which chrome it is.
+`chrome-*` classes are for shared components, which do not.
+
+### Inventing a colour, or reaching into the other playbook, is wrong
+
+Not a judgement call. A raw hex, a stock Tailwind colour (`text-gray-500`, `bg-blue-50`), a new
+token, or a Light class on a Salesforce screen all produce a screen that reads as neither product,
+which is worse than plain. If a shape you need is not in the vocabulary, compose the shapes that
+are.
+
+Three exceptions exist and are all documented at their definitions: the **Illustrative chip**,
+which is deliberately outside both playbooks because it is our annotation and must look the same in
+both; **`Button intent="magic"`**, Light's AI gradient, which has no Salesforce equivalent and
+belongs only in Light chrome; and **`TeamsCard`**, which opens its own Teams scope because a Teams
+notification looks like Teams wherever it is pinned.
 
 ### Light screens use Light's own semantic tokens
 
@@ -270,7 +308,7 @@ controls, `rounded-lg` on panels, `rounded-2xl` on the document well.
 
 Status tones are background/foreground **pairs** (`bg-status-positive` + `text-text-on-positive`).
 Never pass a bare text colour to a badge. `Badge`, `Button` and `Typography` already encode the
-right pairs — compose them rather than restyling.
+right pairs for whichever playbook they are in — compose them rather than restyling.
 
 ### Light has no brand orange
 
@@ -301,6 +339,11 @@ radius    rounded-sf-sm   rounded-sf-md   rounded-sf-lg      type  font-slds
 Two conventions carry the look: **white cards on the `bg-sf-page` grey floor** with 1px
 `border-sf-border` hairlines — the opposite of Light's 0.5px rules on a flat surface — and the
 system font stack (`font-slds`), never Inter. `SalesforceChrome` sets both for you.
+
+One thing SLDS does not have: a nine-tone status ramp. Lightning themes success, warning and error
+and leaves everything else a neutral or brand-tinted pill, with the **label** carrying the meaning.
+`Badge` reproduces that rather than correcting it, so `draft` and `inactive` read alike on a
+Salesforce screen. Write the status word you mean and let the pill be quiet.
 
 ### What we know about KeyShot's Salesforce, and what we do not
 
@@ -354,10 +397,16 @@ shipping unreadable copy.
 ❌  text-accent   style={{ color: "#FF6105" }}
 ```
 
+These are the **third** palette, and they are for our own surfaces — the gallery, the visualisation
+indexes, the framing round a screen. They are also what the chrome context falls back to when a
+shared component renders outside both chromes, which is why a `Badge` on the gallery is a warm
+neutral rather than a Light pastel.
+
 Use palette utilities only — KeyShot's on our surfaces, Light's in Light chrome, SLDS's in
-Salesforce chrome. No stock Tailwind colours (`text-gray-500`, `bg-blue-50`). One raw hex survives
-in the whole repo: Teams purple in `TeamsCard.tsx`, commented as such at its definition, because a
-Teams notification is a third product and does not warrant a fourth token layer.
+Salesforce chrome, `chrome-*` inside a shared component. No stock Tailwind colours
+(`text-gray-500`, `bg-blue-50`). The only originated hexes in the repo are Fluent's Teams values in
+`lib/chrome-theme/`, each labelled with its Fluent token, because a Teams card is a third product
+with no palette here to alias.
 
 ---
 

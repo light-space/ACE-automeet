@@ -132,11 +132,15 @@ app/
       page.tsx               its screen index
       quote-approval/        the worked example screen — read this first
 components/
-  chrome/                    SalesforceChrome, LightChrome — pick one per screen
+  chrome/                    SalesforceChrome, LightChrome — pick one per screen;
+                             ChromeContext — how that choice reaches everything else
   ui/                        Field, Typography, Button, Badge, Table, Checklist,
                              Callout, TeamsCard, ActionLog, ExportCsv
   gallery/                   VisualisationIndex — the shared screen index
 lib/
+  light-theme/               Light's palette, vendored byte-identical from axolotl
+  salesforce-theme/          SLDS's palette, transcribed from the public design system
+  chrome-theme/              the alias layer that maps both onto one vocabulary
   tokens.ts                  KeyShot brand tokens + the #FF6105 colour rule
   visualisations.ts          filesystem discovery + the ScreenChrome / meta types
   cn.ts                      tailwind-merge helper
