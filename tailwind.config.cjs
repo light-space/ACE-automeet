@@ -8,15 +8,20 @@ const lightTheme = require("./lib/light-theme/lightTheme.js");
 const darkTheme = require("./lib/light-theme/darkTheme.js");
 const { colorsAsVariables } = require("./lib/light-theme/colorsAsVariables.js");
 
+// SLDS's token subset, transcribed from @salesforce-ux/design-system@2.24.5.
+// See lib/salesforce-theme/README.md.
+const { sldsPaletteAsVariables } = require("./lib/salesforce-theme/paletteAsVariables.js");
+const { sldsTheme, sldsFontFamily } = require("./lib/salesforce-theme/theme.js");
+
 /**
- * Two palettes live here, and they do not mix.
+ * Three palettes live here, and they do not mix.
  *
  * 1. KEYSHOT (`palette` below) — the client's brand. Wired to the CSS custom
- *    properties in `app/globals.css`; documented in `lib/tokens.ts`. Used by
- *    `SalesforceChrome`, the gallery, and callouts/accents.
+ *    properties in `app/globals.css`; documented in `lib/tokens.ts`. Used on
+ *    OUR surfaces: the gallery, callouts, the framing round a screen.
  *
  *    Note what is NOT here: `accent` is deliberately omitted from `textColor`,
- *    so `text-accent` does not exist and #FF6105 cannot be used as a text
+ *    so `text-accent` does not exist and #FF6105 cannot be used as a text  guard-ok
  *    colour by accident. Accent text is `text-accentText` (#C64B03).
  *
  * 2. LIGHT (the `surface` / `text` / `icon` / `border` / `status` / `button` …
@@ -24,8 +29,13 @@ const { colorsAsVariables } = require("./lib/light-theme/colorsAsVariables.js");
  *    `addBase` plugin at the bottom. A Light screen says `bg-surface-level-1`
  *    and `text-text-secondary` because that is what production says.
  *
- * Light chrome has NO saturated brand primary. Do not paint it KeyShot orange:
- * the orange is what makes it stop looking like Light.
+ * 3. SALESFORCE (the `sf` block) — SLDS's tokens, transcribed from the public
+ *    design system. A Salesforce screen says `bg-sf-card` and `text-sf-weak`.
+ *
+ * Neither product's chrome is painted in KeyShot orange. Light chrome has no
+ * saturated brand primary at all; Salesforce chrome is Salesforce blue. Mocking
+ * a customer's tools means the tools look like their tools — the orange is what
+ * makes each of them stop reading as itself.
  */
 
 const palette = {
@@ -196,6 +206,43 @@ const lightSemanticColors = {
   },
 };
 
+/**
+ * SLDS's semantic keys, from `lib/salesforce-theme/theme.js`. One flat `sf`
+ * namespace so a class reads as a sentence — `bg-sf-card`, `text-sf-weak`,
+ * `border-sf-border-strong`, `bg-sf-path-complete`.
+ */
+const salesforceColors = {
+  brand: "var(--sf-brand)",
+  "brand-accessible": "var(--sf-brand-accessible)",
+  "brand-dark": "var(--sf-brand-dark)",
+  "brand-deep": "var(--sf-brand-deep)",
+  "brand-tint": "var(--sf-brand-tint)",
+  "brand-wash": "var(--sf-brand-wash)",
+
+  page: "var(--sf-bg-page)",
+  card: "var(--sf-bg-card)",
+  shade: "var(--sf-bg-shade)",
+
+  text: "var(--sf-text-default)",
+  weak: "var(--sf-text-weak)",
+  link: "var(--sf-text-link)",
+  inverse: "var(--sf-text-inverse)",
+
+  border: "var(--sf-border)",
+  "border-strong": "var(--sf-border-strong)",
+  "border-brand": "var(--sf-border-brand)",
+  "border-error": "var(--sf-border-error)",
+
+  success: "var(--sf-status-success)",
+  error: "var(--sf-status-error)",
+  warning: "var(--sf-status-warning)",
+  info: "var(--sf-status-info)",
+
+  "path-complete": "var(--sf-path-complete)",
+  "path-current": "var(--sf-path-current)",
+  "path-incomplete": "var(--sf-path-incomplete)",
+};
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -208,13 +255,14 @@ module.exports = {
       // `accent` is deliberately ABSENT from `colors`. Tailwind derives every
       // per-property scale (textColor, backgroundColor, borderColor, …) from
       // `colors`, and `extend` can only add — so leaving #FF6105 in `colors`
-      // and then "removing" it from `textColor` does nothing: `text-accent`
+      // and then "removing" it from `textColor` does nothing: `text-accent`  guard-ok
       // still resolves. It has to be registered per property instead, which is
       // what the blocks below do. `textColor` is the one that never gets it.
-      colors: { ...paletteWithoutAccent, ...lightSemanticColors },
+      colors: { ...paletteWithoutAccent, ...lightSemanticColors, sf: salesforceColors },
       textColor: {
         ...paletteWithoutAccent,
         ...lightSemanticColors,
+        sf: salesforceColors,
         illustrative: "var(--ks-illustrative-text)",
       },
       backgroundColor: {
@@ -227,6 +275,10 @@ module.exports = {
       stroke: { accent: palette.accent },
       fontFamily: {
         sans: ["var(--font-inter)", ...fontFamily.sans],
+        // SLDS's stack. `SalesforceChrome` sets `font-slds` on its root, so a
+        // Salesforce screen is not quietly rendered in Inter — Salesforce is a
+        // system-font product and the difference is a real tell.
+        slds: sldsFontFamily,
       },
       // 0.5px hairline. Light's signature rule weight — a 1px border reads as a
       // different product. Ported from axolotl alongside the radius conventions.
@@ -235,6 +287,12 @@ module.exports = {
       },
       borderRadius: {
         5: "5px",
+        // SLDS `radiusBorder1..3` + circle. Salesforce's radii are tighter than
+        // Light's ladder, which is part of why the two shells read differently.
+        "sf-sm": "var(--sf-radius-small)",
+        "sf-md": "var(--sf-radius-medium)",
+        "sf-lg": "var(--sf-radius-large)",
+        "sf-circle": "var(--sf-radius-circle)",
       },
       strokeWidth: {
         1.5: "1.5",
@@ -251,6 +309,12 @@ module.exports = {
         ":root": {
           ...colorsAsVariables,
           ...darkTheme,
+          // SLDS's layer rides along on `:root`: it has no dark/light split, so
+          // it belongs with neither `darkTheme` nor `.light`. The `--slds-*`
+          // raw ramp and the `--sf-*` semantic aliases are namespaced away from
+          // Light's unprefixed names and KeyShot's `--ks-*`.
+          ...sldsPaletteAsVariables,
+          ...sldsTheme,
         },
         ".light": lightTheme,
       });
