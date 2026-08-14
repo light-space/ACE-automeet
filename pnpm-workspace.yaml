@@ -1,6 +1,0 @@
-# unrs-resolver (a transitive dep of eslint-import-resolver-typescript) ships a
-# native postinstall build. We decline it: it has a JS fallback, `pnpm lint`
-# passes without it, and sirius installs with --ignore-scripts anyway. Declaring
-# it explicitly stops pnpm re-prompting and keeps CI installs non-interactive.
-allowBuilds:
-  unrs-resolver: false
