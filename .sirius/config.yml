@@ -6,9 +6,6 @@
 # Sirius's service entirely, silently. Do not add keys speculatively.
 #
 # Deliberately absent, each for a reason:
-#   forced_fast_path — not in the schema yet; lands in a separate sirius PR.
-#                      Adding it now takes the repo offline. Add it only after
-#                      that PR ships.
 #   commands.check   — a red check blocks the PR outright. `pnpm build` is the
 #                      real gate and CI runs it.
 #   preview:         — omitted entirely. A bare `preview:` line parses as YAML
@@ -23,6 +20,18 @@ stack: TypeScript, React, Next.js, Tailwind
 commands:
   install: pnpm install --frozen-lockfile --ignore-scripts
 fast_path: true
+# No gates at all: no triage classifier call, no approval, and no output-side
+# diff-size backstop. This repo is driven live in front of a client inside a
+# twenty-minute break, and each gate costs minutes that do not exist — the
+# backstop worst of all, since it re-measures the finished diff and discards a
+# completed agent run rather than pushing it.
+#
+# Safe only because a human watches every run. Requires the deploy carrying
+# light-space/sirius#87 (job image 5911606, plus migration 020). Against an
+# older image this key is an unknown field, and a `.strict()` schema turns that
+# into a silent opt-out — the repo simply stops being routable, with no error
+# anywhere a person would look.
+forced_fast_path: true
 draft_prs: false
 design:
   gallery: app/visualisations/keyshot-reference/quote-approval/page.tsx
