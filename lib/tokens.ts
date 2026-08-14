@@ -45,7 +45,11 @@ export const tokens = {
   surface: "#FFFFFF",
   /** Page background. */
   floor: "#FAFAF8",
-  /** Salesforce-side neutral, used by SalesforceChrome. */
+  /**
+   * Cool neutral. It used to be the stand-in Salesforce grey; `SalesforceChrome`
+   * now runs on SLDS's own tokens (`lib/salesforce-theme/`), so this is just a
+   * KeyShot-side neutral — for our surfaces, not a product shell.
+   */
   slate: "#4A5568",
 } as const;
 

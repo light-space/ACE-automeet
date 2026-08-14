@@ -14,9 +14,9 @@ There is no backend, no database, no auth, no data fetching. Every screen is a s
 rendering hardcoded props. If you find yourself adding an API route, stop — you have
 misunderstood the task.
 
-The worked example that shows the whole vocabulary is
-**`app/visualisations/keyshot-reference/quote-approval/page.tsx`** — read it before building
-anything.
+The worked examples that show the whole vocabulary are the two screens in
+**`app/visualisations/keyshot-reference/`** — `quote-approval/` in Salesforce chrome and
+`invoice-review/` in Light's. Read both before building anything.
 
 ---
 
@@ -192,8 +192,20 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 
 | Component | Use when |
 |---|---|
-| `chrome/SalesforceChrome` | **Sales-facing.** Quotes, opportunities, approvals, accounts. Props: `objectType`, `recordTitle`, `appName`, `tabs`, `actions`. |
-| `chrome/LightChrome` | **Finance / back-office.** Invoices, ledger, entities. Props: `title`, `nav`, `actions`, `workspace`. |
+| `chrome/SalesforceChrome` | **Sales-facing.** Quotes, opportunities, approvals, accounts. The Lightning record page: global header, app nav, record header with the **highlights panel**. Props: `objectType`, `recordTitle`, `appName`, `tabs`, `actions`, `highlights`. |
+| `chrome/LightChrome` | **Finance / back-office.** Invoices, ledger, entities. Props: `title`, `nav`, `tabs`, `actions`, `workspace`. |
+
+Choosing one is not just picking a header. It selects the whole playbook everything under it draws
+itself from — see "Two playbooks" below.
+
+### Salesforce pieces — only inside `SalesforceChrome`
+
+| Component | Use when |
+|---|---|
+| `salesforce/Path` | The stage chevron strip. The most recognisable Lightning element — put one on anything with stages. Completed stages are **green**, not blue. |
+| `salesforce/RelatedList` | Records belonging to the record on screen. Carries the count and the View All footer, because leaving them out is what makes a lookalike look wrong. |
+| `salesforce/DetailGrid` | The Details tab: two-column field grid, label in weak text above value. Its `note` prop states the provenance of the *layout* — see below. |
+| `salesforce/Toast` | SLDS's solid-filled action feedback. Not for a PO warning: a toast disappears, and constraint 2 needs a `Callout` that does not. |
 
 ### UI
 
@@ -201,14 +213,18 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 |---|---|
 | `ui/Field` | Any labelled data value. The provenance gate. Exports `Field`, `FieldValue`, `V`/`I`/`X`. |
 | `ui/Typography` | All text. `size` + `bold`; never hand-roll `text-sm font-bold`. |
-| `ui/Button` | Actions. `intent`: `primary` \| `secondary` \| `outline` \| `ghost`. Non-functional in prototypes. |
-| `ui/Badge` | Short status pills. Also exports `StatusBadge` + `STATUS_LABELS`. |
-| `ui/Table` | Tabular data. Columns take an optional `lucide` `icon` rendered before the header text — use it. Cells that are `ProvenancedValue` auto-badge. |
+| `ui/Button` | Actions. `intent`: `magic` \| `primary` \| `secondary` \| `outline` \| `ghost` \| `delete`. Non-functional in prototypes. |
+| `ui/Badge` | Short status pills. `color`: `default` \| `inactive` \| `draft` \| `pending` \| `progress` \| `positive` \| `negative` \| `warning` \| `inverted`. Also exports `StatusBadge` + `STATUS_LABELS`. |
+| `ui/Table` | Tabular data. Columns take an optional `lucide` `icon` rendered before the header text — use it. Cells that are `ProvenancedValue` auto-badge. Exports `TableColumnHeader` for a bespoke head. |
+| `ui/DetailSheet` | Light's two-column record sheet: sticky `h-16` bar, fields left, source document in a `rounded-2xl bg-surface-level-2` well on the right. The default shape for a finance record. |
 | `ui/Checklist` | Readiness criteria, approval steps, "what's outstanding". |
 | `ui/Callout` | Inline advisory. **The warn-and-acknowledge component** — see constraint 2. |
 | `ui/TeamsCard` | Microsoft Teams notification mock-ups. See constraint 4. |
 | `ui/ActionLog` | Audit trails and activity feeds. Composes `ExportCsv` — see constraint 3. |
 | `ui/ExportCsv` | The export control. The one `"use client"` component in the repo. |
+
+None of these takes a colour or a palette prop; the chrome they are inside decides. See "Two
+playbooks" below.
 
 ### Status vocabulary
 
@@ -217,7 +233,131 @@ do not add a UI dependency — everything here is React + Tailwind + `lucide-rea
 
 ---
 
-## Brand tokens
+## Two playbooks
+
+There are two design playbooks here, and **picking a chrome is the entire act of picking one.**
+Wrap the screen in `LightChrome` or `SalesforceChrome` and everything underneath follows —
+surfaces, rules, radii, buttons, status tones, the lot.
+
+| | Light playbook | Salesforce playbook |
+|---|---|---|
+| Pick it when | the user is **finance / back-office** | the user is **sales** |
+| Shell | `chrome/LightChrome` | `chrome/SalesforceChrome` |
+| Its own pieces | `ui/DetailSheet` | `salesforce/Path` · `RelatedList` · `DetailGrid` · `Toast` |
+| Palette | `lib/light-theme/`, vendored byte-identical from axolotl | `lib/salesforce-theme/`, transcribed from public SLDS |
+| Class vocabulary | `bg-surface-level-1` `text-text-secondary` `bg-status-positive` | `bg-sf-card` `text-sf-weak` `border-sf-border` `font-slds` |
+| Signature | 0.5px hairlines on a flat surface; `rounded-[6px]` → `rounded-lg` → `rounded-2xl` | white cards on the grey `bg-sf-page` floor; 1px rules; system font |
+| Has no | saturated brand primary of any kind | KeyShot orange |
+
+**The reason is not aesthetic.** These prototypes claim to show the client their own tools. A
+customer's product painted in the consultant's brand colour is a mock-up of something that does not
+exist, and the room can tell. Mocking a customer's tools means the tools look like their tools.
+
+### No component takes a colour or a palette prop
+
+The chrome decides. `LightChrome` and `SalesforceChrome` open a **chrome scope**
+(`components/chrome/ChromeContext.tsx`), and every shared component inside one — `Field`, `Badge`,
+`Table`, `Callout`, `Checklist`, `ActionLog`, `Button`, `Typography`, `ExportCsv` — resolves its own
+tokens from the surrounding playbook. The same `<StatusBadge status="APPROVED" />` is a Light
+status wash in one shell and a solid SLDS `theme_success` pill in the other, and you write it
+identically both times.
+
+So: **if you find yourself wanting to tell a shared component which palette to use, the answer is
+that you already did, by choosing the chrome.** There is no `chrome` prop, no `color` prop, no
+`palette` prop, and adding one would put back exactly the bug this removed — one screen forgetting
+to pass it and shipping a Light-toned pill on a Salesforce record.
+
+Classes you write *on the screen itself* still name the playbook directly (`text-sf-weak` on a
+Salesforce screen, `text-text-secondary` on a Light one) — a screen knows which chrome it is.
+`chrome-*` classes are for shared components, which do not.
+
+### Inventing a colour, or reaching into the other playbook, is wrong
+
+Not a judgement call. A raw hex, a stock Tailwind colour (`text-gray-500`, `bg-blue-50`), a new
+token, or a Light class on a Salesforce screen all produce a screen that reads as neither product,
+which is worse than plain. If a shape you need is not in the vocabulary, compose the shapes that
+are.
+
+Three exceptions exist and are all documented at their definitions: the **Illustrative chip**,
+which is deliberately outside both playbooks because it is our annotation and must look the same in
+both; **`Button intent="magic"`**, Light's AI gradient, which has no Salesforce equivalent and
+belongs only in Light chrome; and **`TeamsCard`**, which opens its own Teams scope because a Teams
+notification looks like Teams wherever it is pinned.
+
+### Light screens use Light's own semantic tokens
+
+`lib/light-theme/` holds five files copied **byte-identical** from Light's production frontend
+(axolotl @ `2eeea2714`) — see its `README.md`. `tailwind.config.cjs` maps them to the same class
+names production uses, and `<html className="light">` in `app/layout.tsx` selects the light theme
+(axolotl's `addBase` puts dark on `:root`, light on `.light`). Do not edit the vendored files.
+
+So a Light screen says exactly what production says:
+
+```
+surface   bg-surface-level-0   bg-surface-level-1   bg-surface-level-2
+text      text-text-default    text-text-secondary  text-text-tertiary
+icon      text-icon-secondary
+border    border-border-secondary   border-border-tertiary   border-border-selected
+status    bg-status-positive   bg-status-draft   bg-status-pending   bg-status-negative
+button    bg-button-primary    bg-button-secondary   bg-button-hover-alt1
+```
+
+Two conventions carry the look: **`border-b-0.5`** — the 0.5px hairline, Light's signature rule
+weight; a 1px border reads as a different product — and the radius ladder `rounded-[6px]` on
+controls, `rounded-lg` on panels, `rounded-2xl` on the document well.
+
+Status tones are background/foreground **pairs** (`bg-status-positive` + `text-text-on-positive`).
+Never pass a bare text colour to a badge. `Badge`, `Button` and `Typography` already encode the
+right pairs for whichever playbook they are in — compose them rather than restyling.
+
+### Light has no brand orange
+
+Production Light has no saturated brand primary: neutral greys, a yellow selection accent
+(`border-border-selected`), and a pink→purple AI gradient (`Button intent="magic"`). Painting Light
+chrome in KeyShot orange makes it look *less* like Light, which defeats the point of drawing it.
+
+### Salesforce screens use SLDS's tokens
+
+`lib/salesforce-theme/` holds a small, sourced subset of the **Salesforce Lightning Design
+System** — SLDS is public, and it is the only source of truth we have for what Lightning
+Experience looks like. There is no Salesforce codebase to vendor from and the SLDS package is not
+a dependency here; see that folder's `README.md` for what was read, from which version, and the
+four places SLDS does not transfer cleanly.
+
+It is wired the same way Light's is — raw ramp → CSS variables → semantic names → Tailwind — so a
+Salesforce screen carries no hexes either:
+
+```
+surface   bg-sf-page   bg-sf-card
+text      text-sf-text   text-sf-weak   text-sf-link   text-sf-inverse
+brand     bg-sf-brand   bg-sf-brand-accessible   bg-sf-brand-deep   border-sf-border-brand
+border    border-sf-border   border-sf-border-strong
+status    bg-sf-success   bg-sf-error   bg-sf-warning   bg-sf-info
+radius    rounded-sf-sm   rounded-sf-md   rounded-sf-lg      type  font-slds
+```
+
+Two conventions carry the look: **white cards on the `bg-sf-page` grey floor** with 1px
+`border-sf-border` hairlines — the opposite of Light's 0.5px rules on a flat surface — and the
+system font stack (`font-slds`), never Inter. `SalesforceChrome` sets both for you.
+
+One thing SLDS does not have: a nine-tone status ramp. Lightning themes success, warning and error
+and leaves everything else a neutral or brand-tinted pill, with the **label** carrying the meaning.
+`Badge` reproduces that rather than correcting it, so `draft` and `inactive` read alike on a
+Salesforce screen. Write the status word you mean and let the pill be quiet.
+
+### What we know about KeyShot's Salesforce, and what we do not
+
+KeyShot's Salesforce quoting is **custom-coded, not standard CPQ** — their Group Finance Manager
+said so. So the chrome is accurate (SLDS is SLDS) but **any quote field layout we draw is
+inference**: we have never seen their page layout, and there is no standard one to copy.
+
+That is a different kind of invention from an invented value, and the per-field `V`/`I`/`X`
+markers cannot express it — every field can be honestly marked and the *arrangement* still be
+ours. So say it on the screen: `DetailGrid` takes a `note` for exactly this, and
+`quote-approval/` shows the wording. A screen that shows an inferred layout without saying so
+reads as a photograph of their system, which is precisely the claim we cannot make.
+
+## KeyShot brand tokens
 
 Full detail and rationale in **`lib/tokens.ts`**; the values live as CSS custom properties in
 `app/globals.css` and are exposed as Tailwind utilities via `tailwind.config.cjs`.
@@ -235,7 +375,7 @@ Full detail and rationale in **`lib/tokens.ts`**; the values live as CSS custom 
 | `softFill` | `#E5E4DF` | Inert fills, chips |
 | `surface` | `#FFFFFF` | Cards, panels |
 | `floor` | `#FAFAF8` | Page background |
-| `slate` | `#4A5568` | Salesforce-side neutral |
+| `slate` | `#4A5568` | Cool neutral for our own surfaces |
 
 Typeface is **Inter**, loaded in `app/layout.tsx` and wired to `font-sans`.
 
@@ -247,17 +387,26 @@ It measures ~3.1:1 on `#FAFAF8` and fails WCAG AA for body text. It is a fill: b
 borders, rules, chart marks, large icon glyphs. **Accent text is `#C64B03` — `text-accentText`.**
 That is the entire reason two accent values exist.
 
-The `text-accent` Tailwind class is deliberately **not generated** (`tailwind.config.cjs` drops
-`accent` from `textColor`), so reaching for it fails loudly rather than shipping unreadable copy.
+The `text-accent` Tailwind class is deliberately **not generated**: `accent` is left out of
+`theme.extend.colors` entirely and registered per property (`backgroundColor`, `borderColor`,
+`ringColor`, `fill`, `stroke`) — never `textColor`. Reaching for it fails loudly rather than
+shipping unreadable copy.
 
 ```
 ✅  bg-accent   border-accent   text-accentText
 ❌  text-accent   style={{ color: "#FF6105" }}
 ```
 
-Use palette utilities only. No stock Tailwind colours (`text-gray-500`, `bg-blue-50`). The two
-documented exceptions are literal third-party chrome — Salesforce blue in `SalesforceChrome.tsx`
-and Teams purple in `TeamsCard.tsx` — both commented as such at their definition.
+These are the **third** palette, and they are for our own surfaces — the gallery, the visualisation
+indexes, the framing round a screen. They are also what the chrome context falls back to when a
+shared component renders outside both chromes, which is why a `Badge` on the gallery is a warm
+neutral rather than a Light pastel.
+
+Use palette utilities only — KeyShot's on our surfaces, Light's in Light chrome, SLDS's in
+Salesforce chrome, `chrome-*` inside a shared component. No stock Tailwind colours
+(`text-gray-500`, `bg-blue-50`). The only originated hexes in the repo are Fluent's Teams values in
+`lib/chrome-theme/`, each labelled with its Fluent token, because a Teams card is a third product
+with no palette here to alias.
 
 ---
 

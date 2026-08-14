@@ -24,9 +24,12 @@
   --ks-floor: #fafaf8;
   --ks-slate: #4a5568;
 
-  /* Illustrative-value chip. Intentionally outside the brand palette. */
+  /* Illustrative-value chip. Intentionally outside the brand palette, and
+     deliberately NOT part of the chrome context: the chip means the same thing
+     in every shell and must look the same in every shell. See Field.tsx. */
   --ks-illustrative-bg: #fef3c7;
   --ks-illustrative-text: #894b00;
+  --ks-illustrative-edge: #b7791f;
 }
 
 @layer base {
@@ -41,8 +44,21 @@
 }
 
 @layer utilities {
-  /* Focus ring in brand accent. Accent as a *ring* is a fill, not text — allowed. */
+  /* Focus ring in brand accent. Accent as a *ring* is a fill, not text — allowed.
+     Used by KeyShot-side surfaces: the gallery, SalesforceChrome. */
   .focus-ring {
     @apply outline-none ring-offset-2 ring-offset-floor focus-visible:ring-2 focus-visible:ring-accent;
+  }
+
+  /* Light's focus ring, ported verbatim from axolotl `src/styles/globals.css`.
+     Kept for Light chrome's own pieces. Shared components use the chrome-aware
+     ring below instead, which is this exact shape with the ring colour taken
+     from whichever playbook the component is rendering inside. */
+  .light-focus-ring {
+    @apply outline-none ring-border-focus transition-shadow focus:ring-1 focus-visible:outline-none focus-visible:ring-1;
+  }
+
+  .chrome-focus-ring {
+    @apply outline-none ring-chrome-focus transition-shadow focus:ring-1 focus-visible:outline-none focus-visible:ring-1;
   }
 }

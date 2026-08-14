@@ -24,6 +24,20 @@ import type { ProvenancedValue } from "@/lib/tokens";
  *
  * This stays a server component; `ExportCsv` carries its own `"use client"`
  * boundary, and importing a client component from a server component is fine.
+ *
+ * ── This component used to take a `chrome` prop. It does not any more ───────
+ * An audit trail is one of the few shapes that appears in BOTH shells — sales
+ * approvals in Salesforce, invoice history in Light — so it needed to know
+ * which palette to draw itself in, and it was told: `chrome="salesforce"`.
+ *
+ * That worked and was still the wrong shape. A prop is something a screen
+ * author can forget, and forgetting it put a Light-toned card on a Salesforce
+ * record with no error anywhere. Every other shared component would have needed
+ * the same prop, threaded through every screen, correct every time.
+ *
+ * Now the chrome the component is INSIDE decides — `bg-chrome-card`,
+ * `bg-chrome-marker`, `border-rule` — so there is nothing to pass and nothing
+ * to get wrong. See `components/chrome/ChromeContext.tsx`.
  */
 
 export type ActionLogEntry = {
@@ -59,9 +73,14 @@ export function ActionLog({
   ]);
 
   return (
-    <div className={cn("rounded-5 border-0.5 border-hairline bg-surface", className)}>
-      <div className="flex items-center justify-between gap-3 border-b-0.5 border-hairline px-4 py-3">
-        <Typography as="h3" size="sm" bold className="text-ink">
+    <div
+      className={cn(
+        "rounded-chrome-card border-rule border-chrome-border bg-chrome-card",
+        className
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 border-b-rule border-chrome-border px-4 py-3">
+        <Typography as="h3" size="sm" bold className="text-chrome-text">
           {title}
         </Typography>
         <ExportCsv filename={exportFilename} headers={CSV_HEADERS} rows={csvRows} />
@@ -74,14 +93,19 @@ export function ActionLog({
             <li key={index} className="flex gap-3">
               {/* Timeline rail: dot plus the connector down to the next entry. */}
               <div className="flex w-3 shrink-0 flex-col items-center">
-                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
-                {!isLast && <span className="w-px flex-1 bg-hairline" aria-hidden />}
+                <span
+                  className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-chrome-marker"
+                  aria-hidden
+                />
+                {!isLast && (
+                  <span className="w-px flex-1 bg-chrome-border-strong" aria-hidden />
+                )}
               </div>
 
               <div className={cn("flex min-w-0 flex-1 flex-col gap-0.5", !isLast && "pb-4")}>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                   <FieldValue value={entry.actor} />
-                  <Typography as="span" size="sm" className="text-text2">
+                  <Typography as="span" size="sm" className="text-chrome-weak">
                     {entry.action}
                   </Typography>
                 </div>

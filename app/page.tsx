@@ -33,7 +33,7 @@ export default async function HomePage() {
         <Typography as="p" size="sm" className="max-w-2xl text-text2">
           Each visualisation turns one client discovery conversation into future-state screens,
           drawn inside the application chrome those users would really see. Values marked{" "}
-          <span className="rounded-full bg-illustrative px-1.5 py-0.5 text-[10px] font-medium text-illustrative">
+          <span className="rounded-[3px] bg-illustrative px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-illustrative ring-1 ring-inset ring-illustrative">
             Illustrative
           </span>{" "}
           are invented to make a screen legible — they are not sourced from the client.
@@ -72,7 +72,7 @@ export default async function HomePage() {
                   >
                     {meta.client}
                   </Typography>
-                  {meta.reference && <Badge tone="neutral">Reference</Badge>}
+                  {meta.reference && <Badge color="inactive">Reference</Badge>}
                 </div>
 
                 <Typography as="h2" size="lg" bold className="leading-snug">

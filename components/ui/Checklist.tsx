@@ -19,6 +19,9 @@ import type { ProvenancedValue } from "@/lib/tokens";
  * The optional `note` is *data* — a date, a name, an amount — so it is a
  * `ProvenancedValue` and renders through `FieldValue`, which badges Illustrative
  * values automatically.
+ *
+ * Card, rules, radius and text resolve through the chrome context; it takes no
+ * palette prop.
  */
 
 export type ChecklistItem = {
@@ -37,10 +40,13 @@ export type ChecklistProps = {
 export function Checklist({ items, title, className }: ChecklistProps) {
   return (
     <div
-      className={cn("rounded-5 border-0.5 border-hairline bg-surface p-4", className)}
+      className={cn(
+        "rounded-chrome-card border-rule border-chrome-border bg-chrome-card p-4",
+        className
+      )}
     >
       {title && (
-        <Typography as="h3" size="sm" bold className="mb-3 text-ink">
+        <Typography as="h3" size="sm" bold className="mb-3 text-chrome-text">
           {title}
         </Typography>
       )}
@@ -54,14 +60,23 @@ export function Checklist({ items, title, className }: ChecklistProps) {
                 size={15}
                 strokeWidth={2}
                 aria-hidden
-                className={cn("mt-[3px] shrink-0", item.done ? "text-accentText" : "text-text3")}
+                // Neutral in every chrome, not a success green. The icon shape
+                // and the strike-through already carry done/not-done, and a
+                // readiness list is not a status report — colouring half the
+                // rows green makes the outstanding ones read as failures.
+                className={cn(
+                  "mt-[3px] shrink-0",
+                  item.done ? "text-chrome-weak" : "text-chrome-faint"
+                )}
               />
 
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
                 <Typography
                   as="span"
                   size="sm"
-                  className={cn(item.done ? "text-text2 line-through" : "text-ink")}
+                  className={cn(
+                    item.done ? "text-chrome-weak line-through" : "text-chrome-text"
+                  )}
                 >
                   {item.label}
                 </Typography>

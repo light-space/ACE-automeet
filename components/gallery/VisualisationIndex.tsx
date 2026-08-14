@@ -48,7 +48,7 @@ export async function VisualisationIndex({ slug }: { slug: string }) {
           <Typography as="span" size="xs" className="text-text3">
             {formatDiscoveryDate(meta.date)}
           </Typography>
-          {meta.reference && <Badge tone="neutral">Hand-built reference</Badge>}
+          {meta.reference && <Badge color="inactive">Hand-built reference</Badge>}
         </div>
         <Typography as="h1" size="3xl" bold>
           {meta.title}
@@ -86,7 +86,7 @@ export async function VisualisationIndex({ slug }: { slug: string }) {
                     </Typography>
                   )}
                 </span>
-                <Badge tone={screen.meta.chrome === "salesforce" ? "pending" : "neutral"}>
+                <Badge color={screen.meta.chrome === "salesforce" ? "pending" : "inactive"}>
                   {screen.meta.chrome === "salesforce" ? "Salesforce" : "Light"}
                 </Badge>
               </Link>

@@ -4,55 +4,82 @@ import { cn } from "@/lib/cn";
 import { Typography } from "@/components/ui/Typography";
 
 /**
- * Adapted from axolotl `src/components/ui/Badge.tsx`.
+ * Ported from axolotl `src/components/ui/Badge.tsx` @ 2eeea2714.
  *
- * Kept: the pill geometry (`h-[21px] rounded-full px-2`), the `slotLeft` icon
- * slot, and the status-tone vocabulary keyed draft / pending / positive /
- * negative. Recoloured onto the KeyShot palette.
+ * Kept: the `h-[21px] rounded-full px-2` pill, the `slotLeft` icon slot, the
+ * `truncate` label, and — the part that matters — axolotl's `color` vocabulary,
+ * where each entry is a background/foreground PAIR. Never pass a bare text
+ * colour to a badge; the pairing is what keeps contrast honest, and it is why
+ * these tones cannot be invented locally.
  *
- * Dropped: `BadgeList` / `NumberBadge` / the overlap-counter maths — a
- * prototype screen never has enough badges in a cell to need them.
+ * ── The tones come from the chrome, not from here ───────────────────────────
+ * The pairs below used to be Light's status tokens, hardcoded. A status pill is
+ * one of the most-repeated shapes on a screen, so that put Light's soft pastel
+ * pills on every Salesforce record in the repo — the single most visible way
+ * these prototypes stopped looking like the customer's tools.
  *
- * Note the tones are background+text PAIRS. Never pass a bare text colour to a
- * badge; the pairing is what keeps contrast honest.
+ * Now each pair resolves through the chrome context, so the same `<StatusBadge
+ * status="APPROVED" />` is Light's `status-positive` green wash inside
+ * `LightChrome` and SLDS's solid `theme_success` inside `SalesforceChrome`.
+ * **There is no `color`-to-hex mapping in this file and no palette prop.** The
+ * nine names below are a vocabulary of MEANING; `lib/chrome-theme/` decides
+ * what each one looks like in each playbook.
+ *
+ * Two consequences worth knowing before you reach for a tone:
+ *   - Salesforce has no nine-tone ramp. SLDS themes success / warning / error
+ *     and leaves the rest neutral or brand-tinted, so `draft`, `inactive` and
+ *     `default` read alike there and the LABEL carries the meaning. That is
+ *     Lightning, not a gap to paper over.
+ *   - Outside both chromes (the gallery) the tones collapse to KeyShot's
+ *     neutrals plus the accent, because KeyShot's brand palette has no status
+ *     ramp and inventing one is forbidden.
+ *
+ * Dropped: `BadgeList` / `NumberBadge` / `BadgeListCount` and the overlap-counter
+ * maths — they exist to pack many badges into a live table cell, which a static
+ * prototype never does. The `Tooltip` they depend on went with them.
+ *
+ * `STATUS_LABELS` / `StatusBadge` below are ours, not axolotl's: the KeyShot
+ * document-status vocabulary, keyed to these tones.
  */
 
-export type BadgeTone =
-  | "neutral"
-  | "draft"
-  | "pending"
-  | "positive"
-  | "negative"
-  | "warning"
-  | "accent";
+const colorThemeClasses = {
+  default: "bg-chrome-status-default text-chrome-on-default",
+  pending: "bg-chrome-status-pending text-chrome-on-pending",
+  draft: "bg-chrome-status-draft text-chrome-on-draft",
+  positive: "bg-chrome-status-positive text-chrome-on-positive",
+  negative: "bg-chrome-status-negative text-chrome-on-negative",
+  inactive: "bg-chrome-status-inactive text-chrome-on-inactive",
+  progress: "bg-chrome-status-progress text-chrome-on-progress",
+  warning: "bg-chrome-status-warning text-chrome-on-warning",
+  inverted: "bg-chrome-status-inverted text-chrome-on-inverted",
+} as const;
 
-const toneClasses: Record<BadgeTone, string> = {
-  neutral: "bg-softFill text-text2",
-  draft: "bg-[#FFEDD4] text-[#7E2A0C]",
-  pending: "bg-[#DBEAFE] text-[#1C398E]",
-  positive: "bg-[#D0FAE5] text-[#016630]",
-  negative: "bg-[#FFE2E2] text-[#9F0712]",
-  warning: "bg-illustrative text-illustrative",
-  // Accent as a *fill* with the accessible accent as text. Never #FF6105 text.
-  accent: "bg-accentTint text-accentText",
-};
+export type BadgeColor = keyof typeof colorThemeClasses;
 
 export type BadgeProps = {
-  tone?: BadgeTone;
+  color?: BadgeColor;
   slotLeft?: React.ReactNode;
   bold?: boolean;
+  size?: React.ComponentProps<typeof Typography>["size"];
   className?: string;
   children: React.ReactNode;
 };
 
-export function Badge({ tone = "neutral", slotLeft, bold, className, children }: BadgeProps) {
+export function Badge({
+  color = "inactive",
+  slotLeft,
+  bold,
+  size = "xs",
+  className,
+  children,
+}: BadgeProps) {
   return (
     <Typography
-      size="xs"
+      size={size}
       bold={bold}
       className={cn(
         "inline-flex h-[21px] max-w-full items-center gap-1 overflow-hidden rounded-full px-2",
-        toneClasses[tone],
+        colorThemeClasses[color],
         slotLeft != null && "pl-1",
         className
       )}
@@ -82,19 +109,19 @@ export const STATUS_LABELS = {
 
 export type StatusKey = keyof typeof STATUS_LABELS;
 
-const STATUS_TONES: Record<StatusKey, BadgeTone> = {
+const STATUS_COLORS: Record<StatusKey, BadgeColor> = {
   DRAFT: "draft",
   APPROVAL_PENDING: "pending",
   APPROVED: "positive",
   POSTED: "positive",
   CLEARED: "positive",
-  PARTIALLY_CLEARED: "pending",
+  PARTIALLY_CLEARED: "progress",
   ARCHIVED: "negative",
 };
 
 export function StatusBadge({ status, className }: { status: StatusKey; className?: string }) {
   return (
-    <Badge tone={STATUS_TONES[status]} className={className}>
+    <Badge color={STATUS_COLORS[status]} className={className}>
       {STATUS_LABELS[status]}
     </Badge>
   );
